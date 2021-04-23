@@ -2,8 +2,8 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
-#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -12,6 +12,7 @@
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 
+#include "math.hpp"
 #include "vec2.hpp"
 
 class image {
@@ -27,11 +28,11 @@ public:
 		assert(channel_count < 5
 				&& "No more than 4 channels are supported.");
 
-		data.resize(size.x * size.y * channel_count * (hdr ? 4 : 1));
+		data.resize(size.x * size.y * channel_count * (hdr ? 4 : 1), 0x0);
 	}
 
 	static std::shared_ptr<image> load(const std::filesystem::path &path, bool srgb) {
-		auto img = std::make_shared<image>();
+		auto img = std::shared_ptr<image>(new image());
 
 		img->hdr = stbi_is_hdr(path.c_str());
 		img->srgb = srgb;
@@ -48,10 +49,15 @@ public:
 					reinterpret_cast<int32_t *>(&img->size.y),
 					reinterpret_cast<int32_t *>(&img->channel_count), 0);
 		}
+
+		if (data == nullptr)
+			throw std::runtime_error("Failed to open file: " + path.string());
 		
 		uint32_t byte_length = img->size.x * img->size.y
 				* img->channel_count * (img->hdr ? 4 : 1);
 		img->data = std::vector<uint8_t>(data, data + byte_length);
+
+		return img;
 	}
 
 	void save(const std::filesystem::path &path) const {
@@ -73,19 +79,47 @@ public:
 			throw std::invalid_argument("Unknown file extension.");
 	}
 
-	float read(const uvec2 &pos, uint32_t channel) const;
+	float read(const uvec2 &pos, uint32_t channel) const {
+		uint32_t index = pos.y * size.x + pos.x;
+		index = index * channel_count + channel;
+		
+		float value;
+		if (hdr) {
+			value = *reinterpret_cast<const float *>(
+					data.data() + (index * 4));
+		} else
+			value = data[index] / 255.0F;
 
-	void write(const uvec2 &pos, uint32_t channel, float value);
+		return math::pow(value, srgb ? 2.2F : 1.0F);
+	}
 
-	void for_each(std::function<float(uvec2, uint32_t)> callback);
+	void write(const uvec2 &pos, uint32_t channel, float value) {
+		value = math::pow(value, srgb ? (1 / 2.2F) : 1.0F);
+		
+		uint32_t index = pos.y * size.x + pos.x;
+		index = index * channel_count + channel;
 
-	uvec2 get_size() const;
+		if (hdr)
+			std::memcpy(data.data() + (index * 4), &value, 4);
+		else
+			data[index] = static_cast<uint8_t>(value * 255 + 0.5F);
+	}
 
-	uint32_t get_channel_count() const;
+	uvec2 get_size() const {
+		return size;
+	}
 
-	bool is_hdr() const;
+	uint32_t get_channel_count() const {
+		return channel_count;
+	}
 
-	bool is_srgb() const;
+	bool is_hdr() const {
+		return hdr;
+	}
+
+	bool is_srgb() const {
+		return srgb;
+	}
 
 private:
 	uvec2 size;
@@ -93,5 +127,5 @@ private:
 	bool hdr, srgb;
 	std::vector<uint8_t> data;
 
-	image();
+	image() {}
 };
