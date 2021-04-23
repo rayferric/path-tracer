@@ -1,5 +1,7 @@
 {
 	"files.associations": {
+		"*.fsh": "glsl",
+		"*.vsh": "glsl",
 		"string": "cpp",
 		"stdexcept": "cpp",
 		"array": "cpp",
@@ -62,7 +64,23 @@
 		"cinttypes": "cpp",
 		"typeinfo": "cpp",
 		"numbers": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"ios": "cpp",
+		"locale": "cpp",
+		"xfacet": "cpp",
+		"xiosbase": "cpp",
+		"xlocale": "cpp",
+		"xlocbuf": "cpp",
+		"xlocinfo": "cpp",
+		"xlocmes": "cpp",
+		"xlocmon": "cpp",
+		"xlocnum": "cpp",
+		"xloctime": "cpp",
+		"xmemory": "cpp",
+		"xstddef": "cpp",
+		"xstring": "cpp",
+		"xtr1common": "cpp",
+		"xutility": "cpp"
 	},
 	"cmake.debugConfig": {
 		"cwd": "${workspaceFolder}"

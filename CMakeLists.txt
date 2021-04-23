@@ -8,9 +8,16 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/vendor/stb")
 
 file(GLOB_RECURSE TARGET_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
 add_executable(raytracer ${TARGET_SOURCES})
 
+target_include_directories(raytracer PRIVATE
+	"${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
 target_link_libraries(raytracer stb)
+
+target_precompile_headers(raytracer PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp")
