@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/rayferric/Source/raytracer/build",
+  "command": "/usr/bin/c++  -I/home/rayferric/Source/raytracer/vendor/stb/include -g -std=gnu++2a -o CMakeFiles/raytracer.dir/src/main.cpp.o -c /home/rayferric/Source/raytracer/src/main.cpp",
+  "file": "/home/rayferric/Source/raytracer/src/main.cpp"
+}
+]

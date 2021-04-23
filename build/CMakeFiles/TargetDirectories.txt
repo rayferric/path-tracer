@@ -1,0 +1,5 @@
+/home/rayferric/Source/raytracer/build/CMakeFiles/rebuild_cache.dir
+/home/rayferric/Source/raytracer/build/CMakeFiles/edit_cache.dir
+/home/rayferric/Source/raytracer/build/CMakeFiles/raytracer.dir
+/home/rayferric/Source/raytracer/build/vendor/stb/CMakeFiles/rebuild_cache.dir
+/home/rayferric/Source/raytracer/build/vendor/stb/CMakeFiles/edit_cache.dir
