@@ -91,8 +91,14 @@ inline auto atanh(YOverX y_over_x);
 template<typename A, typename B>
 inline auto min(A a, B b);
 
+template<typename A, typename B, typename... Others>
+inline auto min(A a, B b, Others ...others);
+
 template<typename A, typename B>
 inline auto max(A a, B b);
+
+template<typename A, typename B, typename... Others>
+inline auto max(A a, B b, Others ...others);
 
 template<typename X, typename Min, typename Max>
 inline auto clamp(X x, Min min, Max max);
@@ -104,7 +110,7 @@ template<typename A, typename B, typename Weight>
 inline auto lerp(A a, B b, Weight weight);
 
 template<typename Edge, typename X>
-inline auto step(Edge edge, X x);
+inline int32_t step(Edge edge, X x);
 
 template<typename From, typename To, typename X>
 inline auto smoothstep(From from, To to, X x);

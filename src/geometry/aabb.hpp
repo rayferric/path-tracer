@@ -3,18 +3,19 @@
 #include "geometry/ray.hpp"
 #include "math/vec3.hpp"
 
-struct triangle {
+struct aabb {
 	struct intersection {
 		bool hit;
 		float distance;
-		math::fvec3 barycentric;
 	};
 
-	const math::fvec3 a, b, c;
+	math::fvec3 min, max;
 
-	triangle(const math::fvec3 &a,
-			 const math::fvec3 &b,
-			 const math::fvec3 &c);
+	aabb();
+
+	aabb(const math::fvec3 &min, const math::fvec3 &max);
+
+	void add_point(const math::fvec3 &point);
 
 	intersection intersect(const ray &ray) const;
 };

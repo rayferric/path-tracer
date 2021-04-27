@@ -31,8 +31,8 @@ struct vec2 {
 	template<typename L, typename R>
 	friend auto operator%(const vec2<L> &lhs, const vec2<R> &rhs);
 
-	template<typename T>
-	friend vec2<T> floor(const vec2<T> &v);
+	template<typename U>
+	friend vec2<U> floor(const vec2<U> &vec);
 };
 
 using bvec2 = vec2<bool>;

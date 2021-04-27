@@ -128,9 +128,19 @@ inline auto min(A a, B b) {
 	return b < a ? b : a;
 }
 
+template<typename A, typename B, typename... Others>
+inline auto min(A a, B b, Others ...others) {
+	return min(min(a, b), others...);
+}
+
 template<typename A, typename B>
 inline auto max(A a, B b) {
 	return b > a ? b : a;
+}
+
+template<typename A, typename B, typename... Others>
+inline auto max(A a, B b, Others ...others) {
+	return max(max(a, b), others...);
 }
 
 template<typename X, typename Min, typename Max>
@@ -149,13 +159,13 @@ inline auto lerp(A a, B b, Weight weight) {
 }
 
 template<typename Edge, typename X>
-inline auto step(Edge edge, X x) {
+inline int32_t step(Edge edge, X x) {
 	return x >= edge ? 1 : 0;
 }
 
 template<typename From, typename To, typename X>
 inline auto smoothstep(From from, To to, X x) {
-	inline auto t = saturate((x - from) / (to - from));
+	auto t = saturate((x - from) / (to - from));
     return t * t * (3 - 2 * t);
 }
 
@@ -176,19 +186,19 @@ inline auto round(X x) {
 	return std::round(x);
 }
 
-template<typename X>
+template<typename X> ///
 inline auto fract(X x) {
 	return x - floor(x);
 }
 
 // Conversion
 
-template<typename Degrees>
+template<typename Degrees> ///
 inline auto radians(Degrees degrees) {
 	return degrees * (math::pi / 180);
 }
 
-template<typename Radians>
+template<typename Radians> ///
 inline auto degrees(Radians radians) {
 	return radians * (180 / math::pi);
 }

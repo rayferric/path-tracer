@@ -41,8 +41,8 @@ struct vec4 {
 	template<typename L, typename R>
 	friend auto operator*(L lhs, const vec4<R> &rhs);
 
-	template<typename T>
-	friend std::ostream &operator<<(std::ostream &lhs, const vec4<T> &rhs);
+	template<typename U>
+	friend std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs);
 };
 
 using bvec4 = vec4<bool>;

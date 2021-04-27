@@ -52,8 +52,8 @@ auto operator*(L lhs, const vec4<R> &rhs) {
 	return vec4(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w);
 }
 
-template<typename T>
-std::ostream &operator<<(std::ostream &lhs, const vec4<T> &rhs) {
+template<typename U>
+std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs) {
 	return lhs << '[' <<
 			util::to_string(rhs.x) << ", " <<
 			util::to_string(rhs.y) << ", " <<

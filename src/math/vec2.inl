@@ -38,9 +38,9 @@ auto operator%(const vec2<L> &lhs, const vec2<R> &rhs) {
 	return vec2(lhs.x % rhs.x, lhs.y % rhs.y);
 }
 
-template<typename T>
-vec2<T> floor(const vec2<T> &v) {
-	return vec2<T>(math::floor(v.x), math::floor(v.y));
+template<typename U>
+vec2<U> floor(const vec2<U> &vec) {
+	return vec2<U>(math::floor(vec.x), math::floor(vec.y));
 }
 
 }
