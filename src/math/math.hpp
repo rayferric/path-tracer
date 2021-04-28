@@ -4,12 +4,12 @@
 
 namespace math {
 
-constexpr double e = std::numbers::e;
-constexpr double epsilon = 0.0001;
-constexpr double phi = std::numbers::phi;
-constexpr double pi = std::numbers::pi;
-constexpr double sqrt2 = std::numbers::sqrt2;
-constexpr double sqrt3 = std::numbers::sqrt3;
+constexpr double e       = std::numbers::e;
+constexpr float  epsilon = 0.0001;
+constexpr double phi     = std::numbers::phi;
+constexpr double pi      = std::numbers::pi;
+constexpr double sqrt2   = std::numbers::sqrt2;
+constexpr double sqrt3   = std::numbers::sqrt3;
 
 // Basic
 
@@ -40,7 +40,7 @@ inline auto exp2(X x);
 template<typename X>
 inline auto abs(X x);
 
-template<typename A, typename B, typename Epsilon = double>
+template<typename A, typename B, typename Epsilon = decltype(epsilon)>
 bool is_approx(A a, B b, Epsilon epsilon = epsilon);
 
 // Trigonometry
