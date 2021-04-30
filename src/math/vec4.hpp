@@ -2,9 +2,11 @@
 
 #include "pch.hpp"
 
+#include "math.hpp"
+
 namespace math {
 
-template<typename T>
+template<scalar T>
 struct vec4 {
 	T x, y, z, w;
 
@@ -14,35 +16,40 @@ struct vec4 {
 
 	vec4(T x, T y, T z, T w);
 
+#pragma region Operators
+
+	template<scalar U>
+	friend std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs);
+
 	// Vector + Vector
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator+(const vec4<L> &lhs, const vec4<R> &rhs);
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator-(const vec4<L> &lhs, const vec4<R> &rhs);
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator*(const vec4<L> &lhs, const vec4<R> &rhs);
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator/(const vec4<L> &lhs, const vec4<R> &rhs);
 
 	// Vector + Scalar
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator*(const vec4<L> &lhs, R rhs);
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator/(const vec4<L> &lhs, R rhs);
 
 	// Scalar + Vector
 
-	template<typename L, typename R>
+	template<scalar L, scalar R>
 	friend auto operator*(L lhs, const vec4<R> &rhs);
 
-	template<typename U>
-	friend std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs);
+#pragma endregion
+
 };
 
 using bvec4 = vec4<bool>;

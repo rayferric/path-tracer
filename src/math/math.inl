@@ -2,205 +2,230 @@ namespace math {
 
 // Basic
 
-template<typename X>
-inline auto sqrt(X x) {
+template<scalar X>
+inline X sqrt(X x) {
 	return std::sqrt(x);
 }
 
-template<typename X, typename Power>
-inline auto pow(X x, Power power) {
+template<scalar X, scalar Power,
+typename Ret = std::common_type_t<X, Power>>
+inline Ret pow(X x, Power power) {
 	return std::pow(x, power);
 }
 
-template<typename Base, typename X>
-inline auto log(Base base, X x) {
+template<scalar Base, scalar X,
+		typename Ret = std::common_type_t<Base, X>>
+inline Ret log(Base base, X x) {
 	return std::log(x) / std::log(base);
 }
 
-template<typename X>
-inline auto log(X x) {
+template<scalar X>
+inline X log(X x) {
 	return std::log(x);
 }
 
-template<typename X>
-inline auto log2(X x) {
+template<scalar X>
+inline X log2(X x) {
 	return std::log2(x);
 }
 
-template<typename Base, typename X>
-inline auto exp(Base base, X x) {
+template<scalar Base, scalar X,
+		typename Ret = std::common_type_t<Base, X>>
+inline Ret exp(Base base, X x) {
 	return std::pow(base, x);
 }
 
-template<typename X>
-inline auto exp(X x) {
+template<scalar X>
+inline X exp(X x) {
 	return std::exp(x);
 }
 
-template<typename X>
-inline auto exp2(X x) {
+template<scalar X>
+inline X exp2(X x) {
 	return std::exp2(x);
 }
 
-template<typename X>
-inline auto abs(X x) {
+template<scalar X>
+inline X abs(X x) {
 	return std::abs(x);
 }
 
-template<typename A, typename B, typename Epsilon>
+template<scalar A, scalar B, scalar Epsilon>
 bool is_approx(A a, B b, Epsilon epsilon) {
 	return a == b || math::abs(a - b) < epsilon;
 }
 
 // Trigonometry
 
-template<typename Angle>
-inline auto sin(Angle angle) {
+template<scalar Angle>
+inline Angle sin(Angle angle) {
 	return std::sin(angle);
 }
 
-template<typename Angle>
-inline auto cos(Angle angle) {
+template<scalar Angle>
+inline Angle cos(Angle angle) {
 	return std::cos(angle);
 }
 
-template<typename Angle>
-inline auto tan(Angle angle) {
+template<scalar Angle>
+inline Angle tan(Angle angle) {
 	return std::tan(angle);
 }
 
-template<typename Y>
-inline auto asin(Y y) {
+template<scalar Y>
+inline Y asin(Y y) {
 	return std::asin(y);
 }
 
-template<typename X>
-inline auto acos(X x) {
+template<scalar X>
+inline X acos(X x) {
 	return std::acos(x);
 }
 
-template<typename YOverX>
-inline auto atan(YOverX y_over_x) {
+template<scalar YOverX>
+inline YOverX atan(YOverX y_over_x) {
 	return std::atan(y_over_x);
 }
 
-template<typename Y, typename X>
-inline auto atan2(Y y, X x) {
+template<scalar Y, scalar X,
+		typename Ret = std::common_type_t<Y, X>>
+inline Ret atan2(Y y, X x) {
 	return std::atan2(y, x);
 }
 
 // Hyperbolic
 
-template<typename DoubleArea>
-inline auto sinh(DoubleArea double_area) {
+template<scalar DoubleArea>
+inline DoubleArea sinh(DoubleArea double_area) {
 	return std::sinh(double_area);
 }
 
-template<typename DoubleArea>
-inline auto cosh(DoubleArea double_area) {
+template<scalar DoubleArea>
+inline DoubleArea cosh(DoubleArea double_area) {
 	return std::cosh(double_area);
 }
 
-template<typename DoubleArea>
-inline auto tanh(DoubleArea double_area) {
+template<scalar DoubleArea>
+inline DoubleArea tanh(DoubleArea double_area) {
 	return std::tanh(double_area);
 }
 
-template<typename Y>
-inline auto asinh(Y y) {
+template<scalar Y>
+inline Y asinh(Y y) {
 	return std::asinh(y);
 }
 
-template<typename X>
-inline auto acosh(X x) {
+template<scalar X>
+inline X acosh(X x) {
 	return std::acosh(x);
 }
 
-template<typename YOverX>
-inline auto atanh(YOverX y_over_x) {
+template<scalar YOverX>
+inline YOverX atanh(YOverX y_over_x) {
 	return std::atanh(y_over_x);
-}
-
-// Miscellaneous
-
-template<typename A, typename B>
-inline auto min(A a, B b) {
-	return b < a ? b : a;
-}
-
-template<typename A, typename B, typename... Others>
-inline auto min(A a, B b, Others ...others) {
-	return min(min(a, b), others...);
-}
-
-template<typename A, typename B>
-inline auto max(A a, B b) {
-	return b > a ? b : a;
-}
-
-template<typename A, typename B, typename... Others>
-inline auto max(A a, B b, Others ...others) {
-	return max(max(a, b), others...);
-}
-
-template<typename X, typename Min, typename Max>
-inline auto clamp(X x, Min min, Max max) {
-	return math::min(math::max(x, min), max);
-}
-
-template<typename X>
-inline auto saturate(X x) {
-	return clamp(x, 0, 1);
-}
-
-template<typename A, typename B, typename Weight>
-inline auto lerp(A a, B b, Weight weight) {
-	return a + (b - a) * weight;
-}
-
-template<typename Edge, typename X>
-inline int32_t step(Edge edge, X x) {
-	return x >= edge ? 1 : 0;
-}
-
-template<typename From, typename To, typename X>
-inline auto smoothstep(From from, To to, X x) {
-	auto t = saturate((x - from) / (to - from));
-    return t * t * (3 - 2 * t);
 }
 
 // Rounding
 
-template<typename X>
-inline auto floor(X x) {
+template<scalar X>
+inline X floor(X x) {
 	return std::floor(x);
 }
 
-template<typename X>
-inline auto ceil(X x) {
+template<scalar X>
+inline X ceil(X x) {
 	return std::ceil(x);
 }
 
-template<typename X>
-inline auto round(X x) {
+template<scalar X>
+inline X round(X x) {
 	return std::round(x);
-}
-
-template<typename X> ///
-inline auto fract(X x) {
-	return x - floor(x);
 }
 
 // Conversion
 
-template<typename Degrees> ///
-inline auto radians(Degrees degrees) {
+template<scalar Degrees>
+inline Degrees radians(Degrees degrees) {
 	return degrees * (math::pi / 180);
 }
 
-template<typename Radians> ///
-inline auto degrees(Radians radians) {
+template<scalar Radians>
+inline Radians degrees(Radians radians) {
 	return radians * (180 / math::pi);
+}
+
+// Miscellaneous
+
+template<scalar X, scalar Min, scalar Max,
+		typename Ret = std::common_type_t<X, Min, Max>>
+inline Ret clamp(X x, Min min, Max max) {
+	return math::min(math::max(x, min), max);
+}
+
+template<scalar X>
+inline X fract(X x) {
+	return x - floor(x);
+}
+
+template<scalar A, scalar B, scalar Weight,
+		typename Ret = std::common_type_t<A, B, Weight>>
+inline Ret lerp(A a, B b, Weight weight) {
+	return a + (b - a) * weight;
+}
+
+template<scalar A, scalar B,
+		typename Ret = std::common_type_t<A, B>>
+inline Ret max(A a, B b) {
+	return b > a ? b : a;
+}
+
+template<scalar A, scalar B, scalar... Others,
+		typename Ret = std::common_type_t<A, B, Others...>>
+inline Ret max(A a, B b, Others ...others) {
+	return max(max(a, b), others...);
+}
+
+template<scalar A, scalar B,
+		typename Ret = std::common_type_t<A, B>>
+inline Ret min(A a, B b) {
+	return b < a ? b : a;
+}
+
+template<scalar A, scalar B, scalar... Others,
+		typename Ret = std::common_type_t<A, B, Others...>>
+inline Ret min(A a, B b, Others ...others) {
+	return min(min(a, b), others...);
+}
+
+template<scalar X, scalar Y,
+		typename Ret = std::common_type_t<X, Y>>
+inline Ret mod(X x, Y y) {
+	if constexpr (std::is_floating_point_v<Ret>)
+		return x - y * floor(x / y);
+	else
+		return (y + (x % y)) % y;
+}
+
+template<scalar X>
+inline X saturate(X x) {
+	return clamp(x, 0, 1);
+}
+
+template<scalar X>
+inline int32_t sign(X x) {
+	return (0 < x) - (x < 0);
+}
+
+template<scalar From, scalar To, scalar X,
+		typename Ret = std::common_type_t<From, To, X>>
+inline Ret smoothstep(From from, To to, X x) {
+	Ret t = saturate((x - from) / (to - from));
+    return t * t * (3 - 2 * t);
+}
+
+template<scalar Edge, scalar X>
+inline int32_t step(Edge edge, X x) {
+	return x >= edge ? 1 : 0;
 }
 
 }

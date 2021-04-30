@@ -4,6 +4,9 @@
 
 namespace math {
 
+template <typename T>
+concept scalar = std::is_scalar_v<T>;
+
 constexpr double e       = std::numbers::e;
 constexpr float  epsilon = 0.0001;
 constexpr double phi     = std::numbers::phi;
@@ -13,129 +16,148 @@ constexpr double sqrt3   = std::numbers::sqrt3;
 
 // Basic
 
-template<typename X>
-inline auto sqrt(X x);
+template<scalar X>
+inline X sqrt(X x);
 
-template<typename X, typename Power>
-inline auto pow(X x, Power power);
+template<scalar X, scalar Power,
+		typename Ret = std::common_type_t<X, Power>>
+inline Ret pow(X x, Power power);
 
-template<typename Base, typename X>
-inline auto log(Base base, X x);
+template<scalar Base, scalar X,
+		typename Ret = std::common_type_t<Base, X>>
+inline Ret log(Base base, X x);
 
-template<typename X>
-inline auto log(X x);
+template<scalar X>
+inline X log(X x);
 
-template<typename X>
-inline auto log2(X x);
+template<scalar X>
+inline X log2(X x);
 
-template<typename Base, typename X>
-inline auto exp(Base base, X x);
+template<scalar Base, scalar X,
+		typename Ret = std::common_type_t<Base, X>>
+inline Ret exp(Base base, X x);
 
-template<typename X>
-inline auto exp(X x);
+template<scalar X>
+inline X exp(X x);
 
-template<typename X>
-inline auto exp2(X x);
+template<scalar X>
+inline X exp2(X x);
 
-template<typename X>
-inline auto abs(X x);
+template<scalar X>
+inline X abs(X x);
 
-template<typename A, typename B, typename Epsilon = decltype(epsilon)>
+template<scalar A, scalar B,
+		scalar Epsilon = decltype(epsilon)>
 bool is_approx(A a, B b, Epsilon epsilon = epsilon);
 
 // Trigonometry
 
-template<typename Angle>
-inline auto sin(Angle angle);
+template<scalar Angle>
+inline Angle sin(Angle angle);
 
-template<typename Angle>
-inline auto cos(Angle angle);
+template<scalar Angle>
+inline Angle cos(Angle angle);
 
-template<typename Angle>
-inline auto tan(Angle angle);
+template<scalar Angle>
+inline Angle tan(Angle angle);
 
-template<typename Y>
-inline auto asin(Y y);
+template<scalar Y>
+inline Y asin(Y y);
 
-template<typename X>
-inline auto acos(X x);
+template<scalar X>
+inline X acos(X x);
 
-template<typename YOverX>
-inline auto atan(YOverX y_over_x);
+template<scalar YOverX>
+inline YOverX atan(YOverX y_over_x);
 
-template<typename Y, typename X>
-inline auto atan2(Y y, X x);
+template<scalar Y, scalar X,
+		typename Ret = std::common_type_t<Y, X>>
+inline Ret atan2(Y y, X x);
 
 // Hyperbolic
 
-template<typename DoubleArea>
-inline auto sinh(DoubleArea double_area);
+template<scalar DoubleArea>
+inline DoubleArea sinh(DoubleArea double_area);
 
-template<typename DoubleArea>
-inline auto cosh(DoubleArea double_area);
+template<scalar DoubleArea>
+inline DoubleArea cosh(DoubleArea double_area);
 
-template<typename DoubleArea>
-inline auto tanh(DoubleArea double_area);
+template<scalar DoubleArea>
+inline DoubleArea tanh(DoubleArea double_area);
 
-template<typename Y>
-inline auto asinh(Y y);
+template<scalar Y>
+inline Y asinh(Y y);
 
-template<typename X>
-inline auto acosh(X x);
+template<scalar X>
+inline X acosh(X x);
 
-template<typename YOverX>
-inline auto atanh(YOverX y_over_x);
-
-// Miscellaneous
-
-template<typename A, typename B>
-inline auto min(A a, B b);
-
-template<typename A, typename B, typename... Others>
-inline auto min(A a, B b, Others ...others);
-
-template<typename A, typename B>
-inline auto max(A a, B b);
-
-template<typename A, typename B, typename... Others>
-inline auto max(A a, B b, Others ...others);
-
-template<typename X, typename Min, typename Max>
-inline auto clamp(X x, Min min, Max max);
-
-template<typename X>
-inline auto saturate(X x);
-
-template<typename A, typename B, typename Weight>
-inline auto lerp(A a, B b, Weight weight);
-
-template<typename Edge, typename X>
-inline int32_t step(Edge edge, X x);
-
-template<typename From, typename To, typename X>
-inline auto smoothstep(From from, To to, X x);
+template<scalar YOverX>
+inline YOverX atanh(YOverX y_over_x);
 
 // Rounding
 
-template<typename X>
-inline auto floor(X x);
+template<scalar X>
+inline X floor(X x);
 
-template<typename X>
-inline auto ceil(X x);
+template<scalar X>
+inline X ceil(X x);
 
-template<typename X>
-inline auto round(X x);
-
-template<typename X>
-inline auto fract(X x);
+template<scalar X>
+inline X round(X x);
 
 // Conversion
 
-template<typename Degrees>
-inline auto radians(Degrees degrees);
+template<scalar Degrees>
+inline Degrees radians(Degrees degrees);
 
-template<typename Radians>
-inline auto degrees(Radians radians);
+template<scalar Radians>
+inline Radians degrees(Radians radians);
+
+// Miscellaneous
+
+template<scalar X, scalar Min, scalar Max,
+		typename Ret = std::common_type_t<X, Min, Max>>
+inline Ret clamp(X x, Min min, Max max);
+
+template<scalar X>
+inline X fract(X x);
+
+template<scalar A, scalar B, scalar Weight,
+		typename Ret = std::common_type_t<A, B, Weight>>
+inline Ret lerp(A a, B b, Weight weight);
+
+template<scalar A, scalar B,
+		typename Ret = std::common_type_t<A, B>>
+inline Ret max(A a, B b);
+
+template<scalar A, scalar B, scalar... Others,
+		typename Ret = std::common_type_t<A, B, Others...>>
+inline Ret max(A a, B b, Others ...others);
+
+template<scalar A, scalar B,
+		typename Ret = std::common_type_t<A, B>>
+inline Ret min(A a, B b);
+
+template<scalar A, scalar B, scalar... Others,
+		typename Ret = std::common_type_t<A, B, Others...>>
+inline Ret min(A a, B b, Others ...others);
+
+template<scalar X, scalar Y,
+		typename Ret = std::common_type_t<X, Y>>
+inline Ret mod(X x, Y y);
+
+template<scalar X>
+inline X saturate(X x);
+
+template<scalar X>
+inline int32_t sign(X x);
+
+template<scalar From, scalar To, scalar X,
+		typename Ret = std::common_type_t<From, To, X>>
+inline Ret smoothstep(From from, To to, X x);
+
+template<scalar Edge, scalar X>
+inline int32_t step(Edge edge, X x);
 
 }
 
