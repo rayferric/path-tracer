@@ -2,37 +2,39 @@
 
 #include "math/math.hpp"
 
+using namespace math;
+
 image_texture::image_texture(const std::shared_ptr<image> &img)
 		: img(img) {}
 
-math::fvec4 image_texture::sample(const math::fvec2 &coord) const {
+fvec4 image_texture::sample(const fvec2 &coord) const {
 	// Nearest
 	
-	const math::uvec2 &size = img->get_size();
-	auto pixel = math::uvec2(coord.x * size.x, (1 - coord.y) * size.y); // % size;
+	// const uvec2 &size = img->get_size();
+	// auto pixel = uvec2(coord.x * size.x, (1 - coord.y) * size.y); // % size;
 
-	return read_pixel(pixel);
+	// return read_pixel(pixel);
 
-// 	// Bilinear
+	// Bilinear
 
-// 	const math::uvec2 &size = img->get_size();
-// 	math::fvec2 center(coord.x * size.x - 0.5F, (1 - coord.y) * size.y - 0.5F);
+	const uvec2 &size = img->get_size();
+	fvec2 center(coord.x * size.x - 0.5F, (1 - coord.y) * size.y - 0.5F);
 
-// 	auto tl = math::uvec2(math::floor(center.x), math::floor(center.y)) % size;
-// 	auto tr = math::uvec2( math::ceil(center.x), math::floor(center.y)) % size;
-// 	auto bl = math::uvec2(math::floor(center.x),  math::ceil(center.y)) % size;
-// 	auto br = math::uvec2( math::ceil(center.x),  math::ceil(center.y)) % size;
+	auto tl = mod(uvec2(floor(center.x), floor(center.y)), size);
+	auto tr = mod(uvec2( ceil(center.x), floor(center.y)), size);
+	auto bl = mod(uvec2(floor(center.x),  ceil(center.y)), size);
+	auto br = mod(uvec2( ceil(center.x),  ceil(center.y)), size);
 
-// 	math::fvec2 delta = math::fract(center);
+	fvec2 delta = fract(center);
 
-// 	math::fvec4 t = math::lerp(read_pixel(tl), read_pixel(tr), delta.x);
-// 	math::fvec4 b = math::lerp(read_pixel(bl), read_pixel(br), delta.x);
+	fvec4 t = lerp(read_pixel(tl), read_pixel(tr), delta.x);
+	fvec4 b = lerp(read_pixel(bl), read_pixel(br), delta.x);
 
-// 	return math::lerp(t, b, delta.y);
+	return lerp(t, b, delta.y);
 }
 
-math::fvec4 image_texture::read_pixel(const math::uvec2 &pixel) const {
-	math::fvec4 color;
+fvec4 image_texture::read_pixel(const uvec2 &pixel) const {
+	fvec4 color;
 
 	switch (img->get_channel_count()) {
 	case 4:

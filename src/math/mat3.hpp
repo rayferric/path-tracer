@@ -54,7 +54,8 @@ struct mat3 {
 	template<scalar U>
 	mat3<bool> operator>(const mat3<U> &rhs) const;
 
-	mat3<bool> operator!() const;
+	template<boolean U>
+	friend mat3<bool> operator!(const mat3<U> &mat);
 
 	mat3<T> operator-() const;
 
@@ -112,32 +113,36 @@ using umat3 = mat3<uint32_t>;
 using fmat3 = mat3<float>;
 using dmat3 = mat3<double>;
 
-template<scalar T>
+template<boolean T>
 bool all(const mat3<T> &mat);
 
-template<scalar T>
+template<boolean T>
 bool any(const mat3<T> &mat);
 
 template<scalar T>
 T determinant(const mat3<T> &mat);
 
-template<scalar T>
-auto inverse(const mat3<T> &mat);
+template<floating_point T>
+mat3<T> inverse(const mat3<T> &mat);
 
-template<scalar A, scalar B, scalar Epsilon = decltype(epsilon)>
-bool is_approx(const mat3<A> &a, const mat3<B> &b, Epsilon epsilon = math::epsilon);
+template<scalar A, scalar B,
+		scalar Epsilon = decltype(epsilon)>
+bool is_approx(const mat3<A> &a, const mat3<B> &b,
+		Epsilon epsilon = math::epsilon);
 
 template<scalar T, scalar Epsilon = decltype(epsilon)>
-bool is_orthogonal(const mat3<T> &mat, Epsilon epsilon = math::epsilon);
+bool is_orthogonal(const mat3<T> &mat,
+		Epsilon epsilon = math::epsilon);
 
 template<scalar T, scalar Epsilon = decltype(epsilon)>
-bool is_orthonormal(const mat3<T> &mat, Epsilon epsilon = math::epsilon);
+bool is_orthonormal(const mat3<T> &mat,
+		Epsilon epsilon = math::epsilon);
 
-template<scalar T>
+template<floating_point T>
 mat3<T> orthogonalize(const mat3<T> &mat);
 
-template<scalar T>
-auto orthonormalize(const mat3<T> &mat);
+template<floating_point T>
+mat3<T> orthonormalize(const mat3<T> &mat);
 
 template<scalar T>
 mat3<T> transpose(const mat3<T> &mat);

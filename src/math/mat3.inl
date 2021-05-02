@@ -116,9 +116,9 @@ mat3<bool> mat3<T>::operator>(const mat3<U> &rhs) const {
 	return mat3<bool>(x > rhs.x, y > rhs.y, z > rhs.z);
 }
 
-template<scalar T>
-mat3<bool> mat3<T>::operator!() const {
-	return mat3<bool>(!x, !y, !z);
+template<boolean U>
+mat3<bool> operator!(const mat3<U> &mat) {
+	return mat3<bool>(!mat.x, !mat.y, !mat.z);
 }
 
 template<scalar T>
@@ -224,12 +224,12 @@ auto mat3<T>::operator*(const vec3<U> &rhs) const {
 
 #pragma endregion
 
-template<scalar T>
+template<boolean T>
 bool all(const mat3<T> &mat) {
 	return all(mat.x) && all(mat.y) && all(mat.z);
 }
 
-template<scalar T>
+template<boolean T>
 bool any(const mat3<T> &mat) {
 	return any(mat.x) || any(mat.y) || any(mat.z);
 }
@@ -241,8 +241,8 @@ T determinant(const mat3<T> &mat) {
 		   mat.z.x * (mat.x.y * mat.y.z - mat.y.y * mat.x.z);
 }
 
-template<scalar T>
-auto inverse(const mat3<T> &mat) {
+template<floating_point T>
+mat3<T> inverse(const mat3<T> &mat) {
 	T det1 = +(mat.y.y * mat.z.z - mat.z.y * mat.y.z);
 	T det2 = -(mat.x.y * mat.z.z - mat.z.y * mat.x.z);
 	T det3 = +(mat.x.y * mat.y.z - mat.y.y * mat.x.z);
@@ -283,22 +283,22 @@ bool is_orthonormal(const mat3<T> &mat, Epsilon epsilon) {
 		    is_normalized(mat.z, epsilon);
 }
 
-template<scalar T>
-auto orthogonalize(const mat3<T> &mat) {
-	auto x = mat.x;
+template<floating_point T>
+mat3<T> orthogonalize(const mat3<T> &mat) {
+	T x = mat.x;
 
-	auto y = mat.y
+	T y = mat.y
 			- proj(x, mat.y);
 	
-	auto z = mat.z
+	T z = mat.z
 			- proj(x, mat.z)
 			- proj(y, mat.z);
 
 	return mat3(x, y, z);
 }
 
-template<scalar T>
-auto orthonormalize(const mat3<T> &mat) {
+template<floating_point T>
+mat3<T> orthonormalize(const mat3<T> &mat) {
 	// auto ortho = orthogonalize(mat);
 
 	// ortho.x = normalize(ortho.x);
@@ -307,12 +307,12 @@ auto orthonormalize(const mat3<T> &mat) {
 
 	// return ortho;
 
-	auto x = normalize(mat.x);
+	T x = normalize(mat.x);
 
-	auto y = normalize(mat.y
+	T y = normalize(mat.y
 			- dot(x, mat.y) * x);
 	
-	auto z = normalize(mat.z
+	T z = normalize(mat.z
 			- dot(x, mat.z) * x
 			- dot(y, mat.z) * y);
 

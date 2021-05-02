@@ -53,7 +53,8 @@ struct vec2 {
 	template<scalar U>
 	vec2<bool> operator>(const vec2<U> &rhs) const;
 
-	vec2<bool> operator!() const;
+	template<boolean U>
+	friend vec2<bool> operator!(const vec2<U> &mat);
 
 	vec2<T> operator-() const;
 
@@ -112,66 +113,62 @@ using uvec2 = vec2<uint32_t>;
 using fvec2 = vec2<float>;
 using dvec2 = vec2<double>;
 
-template<scalar T>
+template<boolean T>
 bool all(const vec2<T> &vec);
 
-template<scalar T>
+template<boolean T>
 bool any(const vec2<T> &vec);
 
-template<scalar L, scalar R,
-		typename Ret = std::common_type_t<L, R>>
-vec2<Ret> cross(const vec2<L> &lhs, const vec2<R> &rhs);
-
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		floating_point Ret = std::common_type_t<A, B>>
 Ret distance(const vec2<A> &a, const vec2<B> &b);
 
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		scalar Ret = std::common_type_t<A, B>>
 Ret dot(const vec2<A> &a, const vec2<B> &b);
 
 template<scalar T, scalar Epsilon = decltype(epsilon)>
 bool is_normalized(const vec2<T> &vec, Epsilon epsilon = math::epsilon);
 
-template<scalar T>
+template<floating_point T>
 T length(const vec2<T> &vec);
 
-template<scalar T>
+template<floating_point T>
 vec2<T> normalize(const vec2<T> &vec);
 
-template<scalar To, scalar From,
-		typename Ret = std::common_type_t<To, From>>
+template<floating_point To, floating_point From,
+		scalar Ret = std::common_type_t<To, From>>
 vec2<Ret> proj(const vec2<To> &to, const vec2<From> &from);
 
 #pragma region Component-Wise Math Wrappers
 
-template<scalar X>
+template<floating_point X>
 vec2<X> fract(const vec2<X> &x);
 
 template<scalar From, scalar To, scalar Weight,
-		typename Ret = std::common_type_t<From, To, Weight>>
+		scalar Ret = std::common_type_t<From, To, Weight>>
 vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, Weight weight);
 
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		scalar Ret = std::common_type_t<A, B>>
 vec2<Ret> max(const vec2<A> &a, const vec2<B> &b);
 
 template<scalar A, scalar B, scalar... Others,
-		typename Ret = std::common_type_t<A, B, Others...>>
+		scalar Ret = std::common_type_t<A, B, Others...>>
 vec2<Ret> max(const vec2<A> &a, const vec2<B> &b,
 		const vec2<Others> &...others);
 
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		scalar Ret = std::common_type_t<A, B>>
 vec2<Ret> min(const vec2<A> &a, const vec2<B> &b);
 
 template<scalar A, scalar B, scalar... Others,
-		typename Ret = std::common_type_t<A, B, Others...>>
+		scalar Ret = std::common_type_t<A, B, Others...>>
 vec2<Ret> min(const vec2<A> &a, const vec2<B> &b,
 		const vec2<Others> &...others);
 
 template<scalar X, scalar Y,
-		typename Ret = std::common_type_t<X, Y>>
+		scalar Ret = std::common_type_t<X, Y>>
 vec2<Ret> mod(const vec2<X> &x, const vec2<Y> &y);
 
 #pragma endregion

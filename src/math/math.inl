@@ -8,13 +8,13 @@ inline X sqrt(X x) {
 }
 
 template<scalar X, scalar Power,
-typename Ret = std::common_type_t<X, Power>>
+scalar Ret = std::common_type_t<X, Power>>
 inline Ret pow(X x, Power power) {
 	return std::pow(x, power);
 }
 
 template<scalar Base, scalar X,
-		typename Ret = std::common_type_t<Base, X>>
+		scalar Ret = std::common_type_t<Base, X>>
 inline Ret log(Base base, X x) {
 	return std::log(x) / std::log(base);
 }
@@ -30,7 +30,7 @@ inline X log2(X x) {
 }
 
 template<scalar Base, scalar X,
-		typename Ret = std::common_type_t<Base, X>>
+		scalar Ret = std::common_type_t<Base, X>>
 inline Ret exp(Base base, X x) {
 	return std::pow(base, x);
 }
@@ -88,7 +88,7 @@ inline YOverX atan(YOverX y_over_x) {
 }
 
 template<scalar Y, scalar X,
-		typename Ret = std::common_type_t<Y, X>>
+		scalar Ret = std::common_type_t<Y, X>>
 inline Ret atan2(Y y, X x) {
 	return std::atan2(y, x);
 }
@@ -127,17 +127,17 @@ inline YOverX atanh(YOverX y_over_x) {
 
 // Rounding
 
-template<scalar X>
+template<floating_point X>
 inline X floor(X x) {
 	return std::floor(x);
 }
 
-template<scalar X>
+template<floating_point X>
 inline X ceil(X x) {
 	return std::ceil(x);
 }
 
-template<scalar X>
+template<floating_point X>
 inline X round(X x) {
 	return std::round(x);
 }
@@ -157,48 +157,48 @@ inline Radians degrees(Radians radians) {
 // Miscellaneous
 
 template<scalar X, scalar Min, scalar Max,
-		typename Ret = std::common_type_t<X, Min, Max>>
+		scalar Ret = std::common_type_t<X, Min, Max>>
 inline Ret clamp(X x, Min min, Max max) {
 	return math::min(math::max(x, min), max);
 }
 
-template<scalar X>
+template<floating_point X>
 inline X fract(X x) {
 	return x - floor(x);
 }
 
 template<scalar A, scalar B, scalar Weight,
-		typename Ret = std::common_type_t<A, B, Weight>>
+		scalar Ret = std::common_type_t<A, B, Weight>>
 inline Ret lerp(A a, B b, Weight weight) {
 	return a + (b - a) * weight;
 }
 
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		scalar Ret = std::common_type_t<A, B>>
 inline Ret max(A a, B b) {
 	return b > a ? b : a;
 }
 
 template<scalar A, scalar B, scalar... Others,
-		typename Ret = std::common_type_t<A, B, Others...>>
+		scalar Ret = std::common_type_t<A, B, Others...>>
 inline Ret max(A a, B b, Others ...others) {
 	return max(max(a, b), others...);
 }
 
 template<scalar A, scalar B,
-		typename Ret = std::common_type_t<A, B>>
+		scalar Ret = std::common_type_t<A, B>>
 inline Ret min(A a, B b) {
 	return b < a ? b : a;
 }
 
 template<scalar A, scalar B, scalar... Others,
-		typename Ret = std::common_type_t<A, B, Others...>>
+		scalar Ret = std::common_type_t<A, B, Others...>>
 inline Ret min(A a, B b, Others ...others) {
 	return min(min(a, b), others...);
 }
 
 template<scalar X, scalar Y,
-		typename Ret = std::common_type_t<X, Y>>
+		scalar Ret = std::common_type_t<X, Y>>
 inline Ret mod(X x, Y y) {
 	if constexpr (std::is_floating_point_v<Ret>)
 		return x - y * floor(x / y);
@@ -217,7 +217,7 @@ inline int32_t sign(X x) {
 }
 
 template<scalar From, scalar To, scalar X,
-		typename Ret = std::common_type_t<From, To, X>>
+		scalar Ret = std::common_type_t<From, To, X>>
 inline Ret smoothstep(From from, To to, X x) {
 	Ret t = saturate((x - from) / (to - from));
     return t * t * (3 - 2 * t);
