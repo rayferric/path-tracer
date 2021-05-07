@@ -17,4 +17,4 @@ std::string to_string(double value, bool trim_zeros = true, int32_t precision = 
 
 }
 
-#include "strings.inl"
+#include "string.inl"

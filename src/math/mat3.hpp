@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pch.hpp"
+
 #include "math.hpp"
 #include "math/vec3.hpp"
 

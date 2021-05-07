@@ -2,48 +2,47 @@
 
 #include "pch.hpp"
 
-#include "math/mat3.h"
-#include "math/quat.h"
-#include "math/vec3.h"
-#include "util/strings.h"
+#include "math/mat3.hpp"
+#include "math/quat.hpp"
+#include "math/vec3.hpp"
 
-namespace math {
+namespace scene {
 
 struct transform {
 	static const transform identity;
 
-	fvec3 origin;
-	fmat3 basis;
+	math::fvec3 origin;
+	math::fmat3 basis;
 
-	transform(const fvec3 &origin = fvec3(0),
-			  const fmat3 &basis = fmat3(1));
+	transform(const math::fvec3 &origin = math::fvec3(0),
+			  const math::fmat3 &basis = math::fmat3(1));
 
 	static transform make(
-			const fvec3 &translation = fvec3(0),
-			const quat &rotation = quat(1),
-			const fvec3 &scale = fvec3(1));
+			const math::fvec3 &translation = math::fvec3(0),
+			const math::quat &rotation = math::quat(1),
+			const math::fvec3 &scale = math::fvec3(1));
 
-	static fmat3 make_basis(
-			const quat &rotation = quat(1),
-			const fvec3 &scale = fvec3(1));
+	static math::fmat3 make_basis(
+			const math::quat &rotation = math::quat(1),
+			const math::fvec3 &scale = math::fvec3(1));
 
 	transform inverse() const;
 
-	quat get_rotation() const;
+	math::quat get_rotation() const;
 
-	void set_rotation(const quat &rotation);
+	void set_rotation(const math::quat &rotation);
 
-	void rotate(const quat &rotation);
+	void rotate(const math::quat &rotation);
 
-	fvec3 get_scale() const;
+	math::fvec3 get_scale() const;
 
-	void set_scale(const fvec3 &scale);
+	void set_scale(const math::fvec3 &scale);
 
-	void scale(const fvec3 &scale);
-
-	transform operator*(const transform &rhs) const;
+	void scale(const math::fvec3 &scale);
 
 	friend std::ostream &operator<<(std::ostream &lhs, const transform &rhs);
+
+	transform operator*(const transform &rhs) const;
 };
 
 }

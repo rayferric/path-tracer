@@ -1,4 +1,4 @@
-#include "util/strings.hpp"
+#include "util/string.hpp"
 
 namespace math {
 
@@ -134,6 +134,30 @@ auto vec3<T>::operator/(const vec3<U> &rhs) const {
 	return vec3(x / rhs.x, y / rhs.y, z / rhs.z);
 }
 
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator+=(const vec3<U> &rhs) {
+	return *this = *this + rhs;
+}
+
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator-=(const vec3<U> &rhs) {
+	return *this = *this - rhs;
+}
+
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator*=(const vec3<U> &rhs) {
+	return *this = *this * rhs;
+}
+
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator/=(const vec3<U> &rhs) {
+	return *this = *this / rhs;
+}
+
 // Vector + Scalar
 
 template<scalar T>
@@ -146,6 +170,18 @@ template<scalar T>
 template<scalar U>
 auto vec3<T>::operator/(U rhs) const {
 	return vec3(x / rhs, y / rhs, z / rhs);
+}
+
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator*=(U rhs) {
+	return *this = *this * rhs;
+}
+
+template<scalar T>
+template<scalar U>
+vec3<T> &vec3<T>::operator/=(U rhs) {
+	return *this = *this / rhs;
 }
 
 // Scalar + Vector

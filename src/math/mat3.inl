@@ -1,7 +1,5 @@
 namespace math {
 
-#pragma region Constructors
-
 template<scalar T>
 mat3<T>::mat3() : mat3(1) {}
 
@@ -38,8 +36,6 @@ template<scalar U>
 mat3<T>::mat3(const mat3<U> &other) :
 		mat3(other.x, other.y, other.z) {}
 
-#pragma endregion
-
 #pragma region Operators
 
 template<scalar U>
@@ -56,13 +52,13 @@ std::ostream &operator<<(std::ostream &lhs, const mat3<U> &rhs) {
 
 		for (size_t j = 0; j < 3; j++) {
 			lines[j] << std::setw(max_len) << util::to_string(rhs[i][j]);
-			if (i != 3 - 1)
+			if (i != 2)
 				lines[j] << " | ";
 		}
 	}
 
 	for (size_t i = 0; i < 3; i++) {
-		if (i != 3 - 1) lines[i] << '\n';
+		if (i != 2) lines[i] << '\n';
 		final_ss << lines[i].str();
 	}
 
@@ -219,7 +215,7 @@ template<scalar T>
 template<scalar U>
 auto mat3<T>::operator*(const vec3<U> &rhs) const {
 	mat3<T> t = transpose(*this);
-	return vec3(t.x.dot(rhs), t.y.dot(rhs), t.z.dot(rhs));
+	return vec3(dot(t.x, rhs), dot(t.y, rhs), dot(t.z, rhs));
 }
 
 #pragma endregion
@@ -285,12 +281,12 @@ bool is_orthonormal(const mat3<T> &mat, Epsilon epsilon) {
 
 template<floating_point T>
 mat3<T> orthogonalize(const mat3<T> &mat) {
-	T x = mat.x;
+	vec3<T> x = mat.x;
 
-	T y = mat.y
+	vec3<T> y = mat.y
 			- proj(x, mat.y);
 	
-	T z = mat.z
+	vec3<T> z = mat.z
 			- proj(x, mat.z)
 			- proj(y, mat.z);
 
@@ -307,12 +303,12 @@ mat3<T> orthonormalize(const mat3<T> &mat) {
 
 	// return ortho;
 
-	T x = normalize(mat.x);
+	vec3<T> x = normalize(mat.x);
 
-	T y = normalize(mat.y
+	vec3<T> y = normalize(mat.y
 			- dot(x, mat.y) * x);
 	
-	T z = normalize(mat.z
+	vec3<T> z = normalize(mat.z
 			- dot(x, mat.z) * x
 			- dot(y, mat.z) * y);
 

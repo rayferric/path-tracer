@@ -5,7 +5,7 @@
 #include "math/math.hpp"
 #include "math/mat3.hpp"
 #include "math/vec3.hpp"
-#include "util/strings.hpp"
+#include "util/string.hpp"
 
 namespace math {
 
@@ -21,7 +21,7 @@ struct quat {
 
 	quat(float w, float x, float y, float z);
 
-	static quat axis_angle(const fvec3 &axis, float angle);
+	static quat axis_angle(float angle, const fvec3 &axis);
 
 	static quat from_basis(const fmat3 &basis);
 
@@ -115,10 +115,12 @@ float dot(const quat &lhs, const quat &rhs);
 quat inverse(const quat &quat);
 
 template<typename Epsilon = decltype(epsilon)>
-bool is_approx(const quat &a, const quat &b, Epsilon epsilon = math::epsilon);
+bool is_approx(const quat &a, const quat &b,
+		Epsilon epsilon = math::epsilon);
 
 template<scalar Epsilon = decltype(epsilon)>
-bool is_normalized(const quat &quat, Epsilon epsilon = math::epsilon);
+bool is_normalized(const quat &quat,
+		Epsilon epsilon = math::epsilon);
 
 float length(const quat &quat);
 

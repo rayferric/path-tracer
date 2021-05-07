@@ -1,4 +1,4 @@
-#include "util/strings.hpp"
+#include "util/string.hpp"
 
 #include "math/math.hpp"
 

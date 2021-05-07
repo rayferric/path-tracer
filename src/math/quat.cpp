@@ -12,7 +12,7 @@ quat::quat(float w, const fvec3 &v)
 quat::quat(float w, float x, float y, float z)
 		: w(w), v(x, y, z) {}
 
-quat quat::axis_angle(const fvec3 &axis, float angle) {
+quat quat::axis_angle(float angle, const fvec3 &axis) {
 	float half_angle = angle * 0.5F;
 
 	return quat(
@@ -309,6 +309,25 @@ float length(const quat &quat) {
 
 quat normalize(const quat &quat) {
 	return quat * (1 / length(quat));
+}
+
+quat slerp(const quat &from, const quat &to, float weight) {
+	// quat q = to / from;
+	// float angle = atan2(length(q.v), q.w) * 2;
+	// return from * axis_angle(angle * weight, q.v);
+
+	quat q = to / from;
+
+	float c = q.w;
+	float s = length(q.v);
+
+	float half_angle = atan2(s, c);
+	float inv_sine = 1 / s;
+
+	float k_from = inv_sine * sin(half_angle * (1 - weight));
+	float k_to   = inv_sine * sin(half_angle * weight);
+
+	return (from * k_from) + (to * k_to);
 }
 
 }
