@@ -7,14 +7,12 @@ inline X sqrt(X x) {
 	return std::sqrt(x);
 }
 
-template<scalar X, scalar Power,
-scalar Ret = std::common_type_t<X, Power>>
+template<scalar X, scalar Power, scalar Ret>
 inline Ret pow(X x, Power power) {
 	return std::pow(x, power);
 }
 
-template<scalar Base, scalar X,
-		scalar Ret = std::common_type_t<Base, X>>
+template<scalar Base, scalar X, scalar Ret>
 inline Ret log(Base base, X x) {
 	return std::log(x) / std::log(base);
 }
@@ -29,8 +27,7 @@ inline X log2(X x) {
 	return std::log2(x);
 }
 
-template<scalar Base, scalar X,
-		scalar Ret = std::common_type_t<Base, X>>
+template<scalar Base, scalar X, scalar Ret>
 inline Ret exp(Base base, X x) {
 	return std::pow(base, x);
 }
@@ -87,8 +84,7 @@ inline YOverX atan(YOverX y_over_x) {
 	return std::atan(y_over_x);
 }
 
-template<scalar Y, scalar X,
-		scalar Ret = std::common_type_t<Y, X>>
+template<scalar Y, scalar X, scalar Ret>
 inline Ret atan2(Y y, X x) {
 	return std::atan2(y, x);
 }
@@ -156,8 +152,7 @@ inline Radians degrees(Radians radians) {
 
 // Miscellaneous
 
-template<scalar X, scalar Min, scalar Max,
-		scalar Ret = std::common_type_t<X, Min, Max>>
+template<scalar X, scalar Min, scalar Max, scalar Ret>
 inline Ret clamp(X x, Min min, Max max) {
 	return math::min(math::max(x, min), max);
 }
@@ -167,38 +162,32 @@ inline X fract(X x) {
 	return x - floor(x);
 }
 
-template<scalar A, scalar B, scalar Weight,
-		scalar Ret = std::common_type_t<A, B, Weight>>
+template<scalar A, scalar B, scalar Weight, scalar Ret>
 inline Ret lerp(A a, B b, Weight weight) {
 	return a + (b - a) * weight;
 }
 
-template<scalar A, scalar B,
-		scalar Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, scalar Ret>
 inline Ret max(A a, B b) {
 	return b > a ? b : a;
 }
 
-template<scalar A, scalar B, scalar... Others,
-		scalar Ret = std::common_type_t<A, B, Others...>>
+template<scalar A, scalar B, scalar... Others, scalar Ret>
 inline Ret max(A a, B b, Others ...others) {
 	return max(max(a, b), others...);
 }
 
-template<scalar A, scalar B,
-		scalar Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, scalar Ret>
 inline Ret min(A a, B b) {
 	return b < a ? b : a;
 }
 
-template<scalar A, scalar B, scalar... Others,
-		scalar Ret = std::common_type_t<A, B, Others...>>
+template<scalar A, scalar B, scalar... Others, scalar Ret>
 inline Ret min(A a, B b, Others ...others) {
 	return min(min(a, b), others...);
 }
 
-template<scalar X, scalar Y,
-		scalar Ret = std::common_type_t<X, Y>>
+template<scalar X, scalar Y, scalar Ret>
 inline Ret mod(X x, Y y) {
 	if constexpr (std::is_floating_point_v<Ret>)
 		return x - y * floor(x / y);
@@ -216,8 +205,7 @@ inline int32_t sign(X x) {
 	return (0 < x) - (x < 0);
 }
 
-template<scalar From, scalar To, scalar X,
-		scalar Ret = std::common_type_t<From, To, X>>
+template<scalar From, scalar To, scalar X, scalar Ret>
 inline Ret smoothstep(From from, To to, X x) {
 	Ret t = saturate((x - from) / (to - from));
     return t * t * (3 - 2 * t);

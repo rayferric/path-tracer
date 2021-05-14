@@ -1,7 +1,9 @@
 #pragma once
 
-#include "geometry/ray.hpp"
 #include "math/vec3.hpp"
+#include "renderer/ray.hpp"
+
+namespace renderer {
 
 struct triangle {
 	struct intersection {
@@ -18,3 +20,5 @@ struct triangle {
 
 	intersection intersect(const ray &ray) const;
 };
+
+}

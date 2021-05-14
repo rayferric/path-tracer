@@ -1,6 +1,8 @@
-#include "triangle.hpp"
+#include "renderer/triangle.hpp"
 
 using namespace math;
+
+namespace renderer {
 
 triangle::triangle(
 		const fvec3 &a,
@@ -72,4 +74,6 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 		return { false };
 
 	return { true, dist, fvec3(alpha, beta, gamma) };
+}
+
 }

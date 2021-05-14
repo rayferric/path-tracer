@@ -2,6 +2,8 @@
 
 #include "math/vec3.hpp"
 
+namespace renderer {
+
 class ray {
 public:
 	math::fvec3 origin;
@@ -15,3 +17,5 @@ public:
 private:
 	math::fvec3 dir;
 };
+
+}

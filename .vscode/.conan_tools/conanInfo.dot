@@ -1,0 +1,5 @@
+digraph {
+        "assimp/5.0.1" -> "zlib/1.2.11"
+        "assimp/5.0.1" -> "irrxml/1.2"
+        "conanfile.py" -> "assimp/5.0.1"
+}

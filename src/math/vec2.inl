@@ -196,14 +196,12 @@ bool any(const vec2<T> &vec) {
 	return vec.x || vec.y;
 }
 
-template<scalar A, scalar B,
-		floating_point Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, floating_point Ret>
 Ret distance(const vec2<A> &a, const vec2<B> &b) {
 	return length(a - b);
 }
 
-template<scalar A, scalar B,
-		scalar Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, scalar Ret>
 Ret dot(const vec2<A> &a, const vec2<B> &b) {
 	return a.x * b.x + a.y * b.y;
 }
@@ -223,8 +221,7 @@ vec2<T> normalize(const vec2<T> &vec) {
 	return vec * (1 / length(vec));
 }
 
-template<floating_point To, floating_point From,
-		scalar Ret = std::common_type_t<To, From>>
+template<floating_point To, floating_point From, scalar Ret>
 vec2<Ret> proj(const vec2<To> &to, const vec2<From> &from) {
 	return (dot(to, from) / dot(to, to)) * to;
 }
@@ -236,46 +233,40 @@ vec2<X> fract(const vec2<X> &x) {
 	return vec2<X>(fract(x.x), fract(x.y));
 }
 
-template<scalar From, scalar To, scalar Weight,
-		scalar Ret = std::common_type_t<From, To, Weight>>
+template<scalar From, scalar To, scalar Weight, scalar Ret>
 vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, Weight weight) {
 	return vec2<Ret>(
 			lerp(from.x, to.x, weight),
 			lerp(from.y, to.y, weight));
 }
 
-template<scalar A, scalar B,
-		scalar Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, scalar Ret>
 vec2<Ret> max(const vec2<A> &a, const vec2<B> &b) {
 	return vec2<Ret>(
 			max(a.x, b.x),
 			max(a.y, b.y));
 }
 
-template<scalar A, scalar B, scalar... Others,
-		scalar Ret = std::common_type_t<A, B, Others...>>
+template<scalar A, scalar B, scalar... Others, scalar Ret>
 vec2<Ret> max(const vec2<A> &a, const vec2<B> &b,
 		const vec2<Others> &...others) {
 	return max(max(a, b), others...);
 }
 
-template<scalar A, scalar B,
-		scalar Ret = std::common_type_t<A, B>>
+template<scalar A, scalar B, scalar Ret>
 vec2<Ret> min(const vec2<A> &a, const vec2<B> &b) {
 	return vec2<Ret>(
 			min(a.x, b.x),
 			min(a.y, b.y));
 }
 
-template<scalar A, scalar B, scalar... Others,
-		scalar Ret = std::common_type_t<A, B, Others...>>
+template<scalar A, scalar B, scalar... Others, scalar Ret>
 vec2<Ret> min(const vec2<A> &a, const vec2<B> &b,
 		const vec2<Others> &...others) {
 	return min(min(a, b), others...);
 }
 
-template<scalar X, scalar Y,
-		scalar Ret = std::common_type_t<X, Y>>
+template<scalar X, scalar Y, scalar Ret>
 vec2<Ret> mod(const vec2<X> &x, const vec2<Y> &y) {
 	return vec2<Ret>(
 			mod(x.x, y.x),
