@@ -48,7 +48,7 @@ private:
 
 	transform local_transform;
 	transform global_transform_cache;
-	bool global_transform_valid;
+	bool global_transform_valid = false;
 
 	std::vector<std::shared_ptr<component>> components;
 	std::unordered_map<std::type_index, size_t> component_index;

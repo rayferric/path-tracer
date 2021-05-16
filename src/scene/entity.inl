@@ -2,9 +2,10 @@ namespace scene {
 
 template<std::derived_from<component> T>
 std::shared_ptr<T> entity::get_component() const {
-	if (component_index.contains(typeid(T)))
-		return components[component_index[typeid(T)]];
-	else
+	if (component_index.contains(typeid(T))) {
+		size_t index = component_index.at(typeid(T));
+		return std::static_pointer_cast<T>(components[index]);
+	} else
 		return nullptr;
 }
 

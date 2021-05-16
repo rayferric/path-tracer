@@ -31,7 +31,7 @@ fmat3 transform::make_basis(
 }
 
 transform transform::inverse() const {
-	fmat3 basis = math::inverse(basis);
+	fmat3 basis = math::inverse(this->basis);
 	return transform(basis * -origin, basis);
 }
 
@@ -104,10 +104,14 @@ std::ostream &operator<<(std::ostream &lhs, const transform &rhs) {
 }
 
 transform transform::operator*(const transform &rhs) const {
-	fvec3 origin = this->origin + basis * rhs.origin;
-	fmat3 basis = this->basis * rhs.basis;
+	fvec3 origin = this->basis * rhs.origin + this->origin;
+	fmat3 basis  = this->basis * rhs.basis;
 
 	return transform(origin, basis);
+}
+
+fvec3 transform::operator*(const fvec3 &rhs) const {
+	return basis * rhs + origin;
 }
 
 }

@@ -18,11 +18,11 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 	
 	// We cross two vectors which lay on the triangle's plane
 	// Could use -ca for the actual CCW-front normal
-	fvec3 normal = normalize(cross(ab, ca));
+	fvec3 normal = cross(ab, ca);
 	
 	// If ray is perpendicular to the normal...
 	denom = dot(normal, ray.get_dir());
-	if (is_approx(denom, 0))
+	if (denom == 0)
 		return { false };
 	
 	// d = proj(N, A - O) / proj(N, D)
@@ -57,7 +57,7 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 
 	// If any of the coordinates is negative,
 	// intersection occured outside of the triangle
-	if (alpha < 0)
+	if (alpha + epsilon < 0)
 		return { false };
 
 	denom = dot(hb, bc);
@@ -65,12 +65,12 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 		return { false };
 	float beta = 1 - (dot(hb, hit - b) / denom);
 
-	if (beta < 0)
+	if (beta + epsilon < 0)
 		return { false };
 
 	float gamma = 1 - (alpha + beta);
 
-	if (gamma < 0)
+	if (gamma + epsilon < 0)
 		return { false };
 
 	return { true, dist, fvec3(alpha, beta, gamma) };

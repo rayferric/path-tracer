@@ -177,6 +177,9 @@ template<scalar X, scalar Y,
 		scalar Ret = std::common_type_t<X, Y>>
 vec3<Ret> mod(const vec3<X> &x, const vec3<Y> &y);
 
+template<scalar X>
+vec3<X> saturate(const vec3<X> &x);
+
 #pragma endregion
 
 }

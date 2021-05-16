@@ -11,43 +11,141 @@ using namespace math;
 using namespace renderer;
 using namespace scene;
 
-int main() {
-	try {
-	std::cout << "Hello, world!\n";
-	std::shared_ptr<entity> root = load_gltf("assets/suzanne.gltf");
-	std::cout << root->get_components().size() << std::endl;
-	} catch (std::exception &e) {
-		std::cout << e.what();
+struct trace_state {
+	bool hit;
+	float min_distance;
+	const mesh::vertex *v1, *v2, *v3;
+	fvec3 barycentric;
+	std::shared_ptr<entity> entity;
+};
+
+void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, const ray &ray) {
+	if (auto model = entity->get_component<renderer::model>()) {
+		transform transform = entity->get_global_transform().inverse();
+
+		renderer::ray view_ray(
+			transform * ray.origin,
+			transform.basis * ray.get_dir()
+		);
+
+		for (const auto &surface : model->get_surfaces()) {
+			for (uvec3 triangle : surface.mesh->triangles) {
+				auto &v1 = surface.mesh->vertices[triangle.x];
+				auto &v2 = surface.mesh->vertices[triangle.y];
+				auto &v3 = surface.mesh->vertices[triangle.z];
+
+				auto result = renderer::triangle(v1.position,
+						v2.position, v3.position).intersect(view_ray);
+
+				if (!result.hit)
+					continue;
+			
+				if (!state.hit || result.distance < state.min_distance) {
+					state.hit = true;
+					state.min_distance = result.distance;
+
+					state.v1 = &v1;
+					state.v2 = &v2;
+					state.v3 = &v3;
+
+					state.barycentric = result.barycentric;
+
+					state.entity = entity;
+				}
+			}
+		}
 	}
 
-	// ray r(
-	// 	fvec3(0, 0, 1),
-	// 	fvec3(0, 0, -1)
-	// );
+	for (const auto &child : entity->get_children())
+		trace_entity(state, child, ray);
+}
 
-	// auto img = std::make_shared<image>(uvec2(1280, 720), 3, false, true);
+fvec3 tonemap_approx_aces(const fvec3 &hdr) {
+	constexpr float a = 2.51F;
+	const fvec3 b(0.03F);
+	constexpr float c = 2.43F;
+	const fvec3 d(0.59F);
+	const fvec3 e(0.14F);
+	return saturate((hdr * (a * hdr + b)) / (hdr * (c * hdr + d) + e));
+}
+
+const fvec3 light_dir = normalize(fvec3(1));
+
+fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
+	trace_state state = { false };
+	trace_entity(state, entity, ray);
+
+	fvec3 color(0);
+
+	if (state.hit) {
+		fvec3 pos(0), normal(0);
+
+		pos += state.barycentric.x * state.v1->position;
+		pos += state.barycentric.y * state.v2->position;
+		pos += state.barycentric.z * state.v3->position;
+		pos = state.entity->get_global_transform() * pos;
+
+		normal += state.barycentric.x * state.v1->normal;
+		normal += state.barycentric.y * state.v2->normal;
+		normal += state.barycentric.z * state.v3->normal;
+
+		renderer::ray light_ray(
+			pos + light_dir * epsilon,
+			light_dir
+		);
+
+		state = { false };
+		trace_entity(state, entity, light_ray);
+
+		if (!state.hit)
+			color = fvec3(math::max(math::dot(normal, light_dir), 0));
+
+		color += fvec3(0.1F);
+	}
+
+	color = tonemap_approx_aces(color);
+
+	return color;
+}
+
+const uint32_t resolution = 1024;
+
+int main() {
+	std::shared_ptr<entity> root = load_gltf("assets/suzanne/suzanne.gltf");
+
+	ray ray(
+		fvec3(0, 0, 5),
+		fvec3(0, 0, -1)
+	);
+
+	auto img = std::make_shared<image>(uvec2(resolution, resolution), 3, false, true);
 	
-	// for (uint32_t x = 0; x < 1280; x++) {
-	// 	for (uint32_t y = 0; y < 720; y++) {
-	// 		fvec2 coord = fvec2(x / 1280.0F, y / 720.0F) * 2 - fvec2(1);
-	// 		coord.y = - coord.y;
-	// 		r.set_dir(fvec3(coord.x, coord.y, -1));
+	for (uint32_t x = 0; x < resolution; x++) {
+		for (uint32_t y = 0; y < resolution; y++) {
+			fvec2 coord = fvec2(static_cast<float>(x) / resolution,
+					static_cast<float>(y) / resolution) * 2 - fvec2(1);
+			coord.y = -coord.y;
+			coord *= math::tan(math::radians(20.0F));
+			ray.set_dir(fvec3(coord.x, coord.y, -1));
 
-	// 		auto intersection = t.intersect(r);
+			if (y == 0)
+				std::cout << "Drawing hierarchy." << std::endl;
 
-	// 		if (intersection.hit) {
-	// 			img->write(uvec2(x, y), 0, 1.0F);
-	// 			img->write(uvec2(x, y), 1, 1.0F);
-	// 			img->write(uvec2(x, y), 2, 1.0F);
-	// 		} else {
-	// 			img->write(uvec2(x, y), 0, 0.0F);
-	// 			img->write(uvec2(x, y), 1, 0.0F);
-	// 			img->write(uvec2(x, y), 2, 0.0F);
-	// 		}
-	// 	}
-	// }
+			uvec2 pixel(x, y);
 
-	// img->save("render.png");
+			img->write(pixel, 0, 0);
+			img->write(pixel, 1, 0);
+			img->write(pixel, 2, 0);
+
+			fvec3 color = trace(root, ray);
+
+			img->write(pixel, 0, color.x);
+			img->write(pixel, 1, color.y);
+			img->write(pixel, 2, color.z);
+		}
+	}
+
+	img->save("render.png");
 
 	return 0;
 }

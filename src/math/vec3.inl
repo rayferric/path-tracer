@@ -293,6 +293,14 @@ vec3<Ret> mod(const vec3<X> &x, const vec3<Y> &y) {
 			mod(x.z, y.z));
 }
 
+template<scalar X>
+vec3<X> saturate(const vec3<X> &x) {
+	return vec3<X>(
+			saturate(x.x),
+			saturate(x.y),
+			saturate(x.z));
+}
+
 #pragma endregion
 
 }
