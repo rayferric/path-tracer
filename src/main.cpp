@@ -33,19 +33,19 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 
 			auto result = mesh->bvh->intersect(view_ray);
 
-			if (result.hit_data.distance < 0)
+			if (result.distance < 0)
 				continue;
 		
-			if (!state.hit || result.hit_data.distance < state.min_distance) {
+			if (!state.hit || result.distance < state.min_distance) {
 				state.hit = true;
-				state.min_distance = result.hit_data.distance;
+				state.min_distance = result.distance;
 
 				uvec3 &indices = mesh->triangles[result.index];
 				state.v1 = &mesh->vertices[indices.x];
 				state.v2 = &mesh->vertices[indices.y];
 				state.v3 = &mesh->vertices[indices.z];
 
-				state.barycentric = result.hit_data.barycentric;
+				state.barycentric = result.barycentric;
 
 				state.entity = entity;
 			}
@@ -100,10 +100,10 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color += fvec3(0.1F);
 
-		//color = (state.min_distance - 4) * 0.25F;
+		color = (state.min_distance - 0.3F) * 2 * state.barycentric;
 	}
 
-	color = tonemap_approx_aces(color);
+	// color = tonemap_approx_aces(color);
 
 	return color;
 }
@@ -111,10 +111,10 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 const uint32_t resolution = 512;
 
 int main() {
-	std::shared_ptr<entity> root = load_gltf("assets/suzanne/suzanne.gltf");
+	std::shared_ptr<entity> root = load_gltf("assets/bunny/bunny.gltf");
 
 	ray ray(
-		fvec3(0, 0, 5),
+		fvec3(0, 0, 0.5),
 		fvec3(0, 0, -1)
 	);
 

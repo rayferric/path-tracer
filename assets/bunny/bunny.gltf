@@ -1,0 +1,128 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.5.17",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "bun_zipper_res3",
+            "rotation" : [
+                0.8602274656295776,
+                0.27877283096313477,
+                -0.14396312832832336,
+                0.40195685625076294
+            ],
+            "translation" : [
+                0.012192991562187672,
+                -0.05412590503692627,
+                0
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Material",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.4000000059604645
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "bun_zipper_res3",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 3211,
+            "max" : [
+                0.06093459948897362,
+                0.058465100824832916,
+                -0.03341430053114891
+            ],
+            "min" : [
+                -0.09436430037021637,
+                -0.06167209893465042,
+                -0.184812992811203
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 3211,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 3211,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 11283,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 38532,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 38532,
+            "byteOffset" : 38532
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 25688,
+            "byteOffset" : 77064
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 22566,
+            "byteOffset" : 102752
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 125320,
+            "uri" : "bunny.bin"
+        }
+    ]
+}

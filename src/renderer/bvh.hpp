@@ -10,7 +10,8 @@ namespace renderer {
 
 struct bvh_node {
 	struct intersection {
-		triangle::intersection hit_data;
+		float distance;
+		math::fvec3 barycentric;
 		uint32_t index;
 	};
 	
@@ -27,6 +28,7 @@ struct bvh_branch : public bvh_node {
 
 struct bvh_leaf : public bvh_node {
 	std::vector<triangle> triangles;
+	std::vector<uint32_t> indices;
 
 	bvh_node::intersection intersect(const ray &ray) override;
 };

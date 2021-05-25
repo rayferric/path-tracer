@@ -244,6 +244,11 @@ vec3<Ret> proj(const vec3<To> &to, const vec3<From> &from) {
 
 #pragma region Component-Wise Math Wrappers
 
+template<scalar X>
+vec3<X> abs(const vec3<X> &x) {
+	return vec3<X>(abs(x.x), abs(x.y), abs(x.z));
+}
+
 template<floating_point X>
 vec3<X> fract(const vec3<X> &x) {
 	return vec3<X>(fract(x.x), fract(x.y), fract(x.z));

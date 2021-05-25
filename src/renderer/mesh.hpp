@@ -26,7 +26,7 @@ struct mesh {
 
 	// void recalculate_tangents();
 
-	void build_bvh(uint32_t triangles_per_node = 200, float tolerance = 0.9F);
+	void build_bvh(uint32_t triangles_per_node = 50, float tolerance = 0.9F);
 };
 
 }

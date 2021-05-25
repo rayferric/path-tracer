@@ -15,34 +15,18 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "suzanne",
+            "name" : "Suzanne",
             "rotation" : [
-                0.10805758088827133,
-                0.21825917065143585,
-                0.020492346957325935,
-                0.9696734547615051
+                0.22000214457511902,
+                0.28817638754844666,
+                0.09448333084583282,
+                0.927160382270813
             ]
-        }
-    ],
-    "materials" : [
-        {
-            "doubleSided" : true,
-            "name" : "suzanne",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.800000011920929,
-                    0.800000011920929,
-                    0.800000011920929,
-                    1
-                ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.4000000059604645
-            }
         }
     ],
     "meshes" : [
         {
-            "name" : "suzanne",
+            "name" : "Suzanne",
             "primitives" : [
                 {
                     "attributes" : {
@@ -50,8 +34,7 @@
                         "NORMAL" : 1,
                         "TEXCOORD_0" : 2
                     },
-                    "indices" : 3,
-                    "material" : 0
+                    "indices" : 3
                 }
             ]
         }
@@ -60,7 +43,7 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 2886,
+            "count" : 7872,
             "max" : [
                 1.325934886932373,
                 0.9392361640930176,
@@ -76,13 +59,13 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 2886,
+            "count" : 7872,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 2886,
+            "count" : 7872,
             "type" : "VEC2"
         },
         {
@@ -95,28 +78,28 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 34632,
+            "byteLength" : 94464,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 34632,
-            "byteOffset" : 34632
+            "byteLength" : 94464,
+            "byteOffset" : 94464
         },
         {
             "buffer" : 0,
-            "byteLength" : 23088,
-            "byteOffset" : 69264
+            "byteLength" : 62976,
+            "byteOffset" : 188928
         },
         {
             "buffer" : 0,
             "byteLength" : 23616,
-            "byteOffset" : 92352
+            "byteOffset" : 251904
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 115968,
+            "byteLength" : 275520,
             "uri" : "suzanne.bin"
         }
     ]
