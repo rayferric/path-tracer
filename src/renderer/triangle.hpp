@@ -7,12 +7,11 @@ namespace renderer {
 
 struct triangle {
 	struct intersection {
-		bool hit;
-		float distance;
+		float distance = -1;
 		math::fvec3 barycentric;
 	};
 
-	const math::fvec3 a, b, c;
+	math::fvec3 a, b, c;
 
 	triangle(const math::fvec3 &a,
 			 const math::fvec3 &b,

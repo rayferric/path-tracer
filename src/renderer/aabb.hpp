@@ -6,11 +6,6 @@
 namespace renderer {
 
 struct aabb {
-	struct intersection {
-		bool hit;
-		float distance;
-	};
-
 	math::fvec3 min, max;
 
 	aabb();
@@ -21,7 +16,7 @@ struct aabb {
 
 	void add_point(const math::fvec3 &point);
 
-	intersection intersect(const ray &ray) const;
+	float intersect(const ray &ray) const;
 };
 
 }

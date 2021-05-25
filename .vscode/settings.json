@@ -81,7 +81,9 @@
 		"xstring": "cpp",
 		"xtr1common": "cpp",
 		"xutility": "cpp",
-		"xhash": "cpp"
+		"xhash": "cpp",
+		"semaphore": "cpp",
+		"typeindex": "cpp"
 	},
 	"cmake.debugConfig": {
 		"cwd": "${workspaceFolder}"

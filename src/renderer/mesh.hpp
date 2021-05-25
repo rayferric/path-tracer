@@ -4,7 +4,8 @@
 
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
-#include "renderer/aabb.hpp"
+#include "renderer/bvh.hpp"
+#include "renderer/material.hpp"
 
 namespace renderer {
 
@@ -18,13 +19,14 @@ struct mesh {
 
 	std::vector<vertex> vertices;
 	std::vector<math::uvec3> triangles;
-	aabb aabb;
+	std::shared_ptr<bvh_node> bvh = nullptr;
+	std::shared_ptr<renderer::material> material = nullptr;
 
 	// void recalculate_normals(bool shade_smooth = false);
 
 	// void recalculate_tangents();
 
-	void recalculate_aabb();
+	void build_bvh(uint32_t triangles_per_node = 200, float tolerance = 0.9F);
 };
 
 }

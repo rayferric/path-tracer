@@ -16,7 +16,7 @@ struct trace_state {
 	float min_distance;
 	const mesh::vertex *v1, *v2, *v3;
 	fvec3 barycentric;
-	std::shared_ptr<entity> entity;
+	std::shared_ptr<scene::entity> entity;
 };
 
 void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, const ray &ray) {
@@ -28,30 +28,26 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 			transform.basis * ray.get_dir()
 		);
 
-		for (const auto &surface : model->get_surfaces()) {
-			for (uvec3 triangle : surface.mesh->triangles) {
-				auto &v1 = surface.mesh->vertices[triangle.x];
-				auto &v2 = surface.mesh->vertices[triangle.y];
-				auto &v3 = surface.mesh->vertices[triangle.z];
+		for (const auto &surface : model->surfaces) {
+			const auto &mesh = surface.mesh;
 
-				auto result = renderer::triangle(v1.position,
-						v2.position, v3.position).intersect(view_ray);
+			auto result = mesh->bvh->intersect(view_ray);
 
-				if (!result.hit)
-					continue;
-			
-				if (!state.hit || result.distance < state.min_distance) {
-					state.hit = true;
-					state.min_distance = result.distance;
+			if (result.hit_data.distance < 0)
+				continue;
+		
+			if (!state.hit || result.hit_data.distance < state.min_distance) {
+				state.hit = true;
+				state.min_distance = result.hit_data.distance;
 
-					state.v1 = &v1;
-					state.v2 = &v2;
-					state.v3 = &v3;
+				uvec3 &indices = mesh->triangles[result.index];
+				state.v1 = &mesh->vertices[indices.x];
+				state.v2 = &mesh->vertices[indices.y];
+				state.v3 = &mesh->vertices[indices.z];
 
-					state.barycentric = result.barycentric;
+				state.barycentric = result.hit_data.barycentric;
 
-					state.entity = entity;
-				}
+				state.entity = entity;
 			}
 		}
 	}
@@ -89,18 +85,22 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 		normal += state.barycentric.y * state.v2->normal;
 		normal += state.barycentric.z * state.v3->normal;
 
-		renderer::ray light_ray(
-			pos + light_dir * epsilon,
-			light_dir
-		);
+		color = normal;
 
-		state = { false };
-		trace_entity(state, entity, light_ray);
+		// renderer::ray light_ray(
+		// 	pos + light_dir * epsilon,
+		// 	light_dir
+		// );
 
-		if (!state.hit)
-			color = fvec3(math::max(math::dot(normal, light_dir), 0));
+		// state = { false };
+		// trace_entity(state, entity, light_ray);
 
-		color += fvec3(0.1F);
+		// if (!state.hit)
+		// 	color = fvec3(math::max(math::dot(normal, light_dir), 0));
+
+		// color += fvec3(0.1F);
+
+		//color = (state.min_distance - 4) * 0.25F;
 	}
 
 	color = tonemap_approx_aces(color);
@@ -108,7 +108,7 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 	return color;
 }
 
-const uint32_t resolution = 1024;
+const uint32_t resolution = 512;
 
 int main() {
 	std::shared_ptr<entity> root = load_gltf("assets/suzanne/suzanne.gltf");
@@ -129,7 +129,7 @@ int main() {
 			ray.set_dir(fvec3(coord.x, coord.y, -1));
 
 			if (y == 0)
-				std::cout << "Drawing hierarchy." << std::endl;
+				std::cout << "Drawing row: " << x << std::endl;
 
 			uvec2 pixel(x, y);
 

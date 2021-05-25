@@ -23,7 +23,7 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 	// If ray is perpendicular to the normal...
 	denom = dot(normal, ray.get_dir());
 	if (denom == 0)
-		return { false };
+		return { -1 };
 	
 	// d = proj(N, A - O) / proj(N, D)
 	// ...where A is any point on the plane
@@ -31,7 +31,7 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 
 	// If plane is behind the ray
 	if (dist < 0)
-		return { false };
+		return { -1 };
 	
 	// This intersection point lies
 	// on the same plane as our triangle
@@ -52,28 +52,28 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 	// for degenerate triangles
 	denom = dot(ha, ab);
 	if (is_approx(denom, 0))
-		return { false };
+		return { -1 };
 	float alpha = 1 - (dot(ha, hit - a) / denom);
 
 	// If any of the coordinates is negative,
 	// intersection occured outside of the triangle
 	if (alpha + epsilon < 0)
-		return { false };
+		return { -1 };
 
 	denom = dot(hb, bc);
 	if (is_approx(denom, 0))
-		return { false };
+		return { -1 };
 	float beta = 1 - (dot(hb, hit - b) / denom);
 
 	if (beta + epsilon < 0)
-		return { false };
+		return { -1 };
 
 	float gamma = 1 - (alpha + beta);
 
 	if (gamma + epsilon < 0)
-		return { false };
+		return { -1 };
 
-	return { true, dist, fvec3(alpha, beta, gamma) };
+	return { dist, fvec3(alpha, beta, gamma) };
 }
 
 }

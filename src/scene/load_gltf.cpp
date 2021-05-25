@@ -34,7 +34,7 @@ static std::shared_ptr<mesh> process_ai_mesh(aiMesh *ai_mesh) {
 				ai_mesh->mFaces[i].mIndices);
 	}
 
-	mesh->recalculate_aabb();
+	mesh->build_bvh();
 	return mesh;
 }
 
@@ -72,7 +72,7 @@ static std::shared_ptr<entity> process_ai_node(aiNode *ai_node,
 		auto model = entity->add_component<renderer::model>();
 
 		for (uint32_t i = 0; i < ai_node->mNumMeshes; i++)
-			model->add_surface(surfaces[ai_mesh_indices[i]]);
+			model->surfaces.push_back(surfaces[ai_mesh_indices[i]]);
 	}
 
 	return entity;
