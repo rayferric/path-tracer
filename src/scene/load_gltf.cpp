@@ -34,7 +34,7 @@ static std::shared_ptr<mesh> process_ai_mesh(aiMesh *ai_mesh) {
 				ai_mesh->mFaces[i].mIndices);
 	}
 
-	mesh->build_bvh();
+	mesh->build_kd_tree();
 	return mesh;
 }
 

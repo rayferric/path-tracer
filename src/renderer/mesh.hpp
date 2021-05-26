@@ -4,7 +4,7 @@
 
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
-#include "renderer/bvh.hpp"
+#include "renderer/kd_tree.hpp"
 #include "renderer/material.hpp"
 
 namespace renderer {
@@ -19,14 +19,14 @@ struct mesh {
 
 	std::vector<vertex> vertices;
 	std::vector<math::uvec3> triangles;
-	std::shared_ptr<bvh_node> bvh = nullptr;
+	std::shared_ptr<kd_tree_node> kd_tree = nullptr;
 	std::shared_ptr<renderer::material> material = nullptr;
 
 	// void recalculate_normals(bool shade_smooth = false);
 
 	// void recalculate_tangents();
 
-	void build_bvh(uint32_t triangles_per_node = 50, float tolerance = 0.9F);
+	void build_kd_tree(uint8_t depth = 10);
 };
 
 }

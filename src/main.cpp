@@ -31,7 +31,7 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 		for (const auto &surface : model->surfaces) {
 			const auto &mesh = surface.mesh;
 
-			auto result = mesh->bvh->intersect(view_ray);
+			auto result = mesh->kd_tree->intersect(view_ray);
 
 			if (result.distance < 0)
 				continue;
@@ -100,7 +100,7 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color += fvec3(0.1F);
 
-		color = (state.min_distance - 0.3F) * 2 * state.barycentric;
+		//color = (state.min_distance - 3.5F) * 0.2F * state.barycentric;
 	}
 
 	// color = tonemap_approx_aces(color);
@@ -108,13 +108,13 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 	return color;
 }
 
-const uint32_t resolution = 512;
+const uint32_t resolution = 1024;
 
 int main() {
-	std::shared_ptr<entity> root = load_gltf("assets/bunny/bunny.gltf");
+	std::shared_ptr<entity> root = load_gltf("assets/suzanne/suzanne.gltf");
 
 	ray ray(
-		fvec3(0, 0, 0.5),
+		fvec3(0, 0, 5),
 		fvec3(0, 0, -1)
 	);
 

@@ -8,9 +8,9 @@
 
 namespace renderer {
 
-struct bvh_node {
+struct kd_tree_node {
 	struct intersection {
-		float distance;
+		float distance = -1;
 		math::fvec3 barycentric;
 		uint32_t index;
 	};
@@ -20,17 +20,17 @@ struct bvh_node {
 	virtual intersection intersect(const ray &ray) = 0;
 };
 
-struct bvh_branch : public bvh_node {
-	std::shared_ptr<bvh_node> left, right;
+struct kd_tree_branch : public kd_tree_node {
+	std::shared_ptr<kd_tree_node> left, right;
 
-	bvh_node::intersection intersect(const ray &ray) override;
+	kd_tree_node::intersection intersect(const ray &ray) override;
 };
 
-struct bvh_leaf : public bvh_node {
+struct kd_tree_leaf : public kd_tree_node {
 	std::vector<triangle> triangles;
 	std::vector<uint32_t> indices;
 
-	bvh_node::intersection intersect(const ray &ray) override;
+	kd_tree_node::intersection intersect(const ray &ray) override;
 };
 
 }

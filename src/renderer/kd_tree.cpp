@@ -1,4 +1,4 @@
-#include "renderer/bvh.hpp"
+#include "renderer/kd_tree.hpp"
 
 #include "math/vec3.hpp"
 #include "math/vec4.hpp"
@@ -7,26 +7,25 @@ using namespace math;
 
 namespace renderer {
 
-bvh_node::intersection bvh_branch::intersect(const ray &ray) {
+kd_tree_node::intersection kd_tree_branch::intersect(const ray &ray) {
+	kd_tree_node::intersection result;
+
 	float ldist = left  ? left->aabb.intersect(ray)  : -1;
 	float rdist = right ? right->aabb.intersect(ray) : -1;
 
-	bvh_node::intersection result, r1, r2;
-
 	if (ldist >= 0) {
 		if (rdist >= 0) {
-			if (ldist <= rdist) {
+			if (ldist < rdist) {
 				result = left->intersect(ray);
-				if (result.distance < 0)
-					result = right->intersect(ray);
+				if (result.distance < 0){
+					result = right->intersect(ray);}
 			} else {
 				result = right->intersect(ray);
-				if (result.distance < 0)
-					result = left->intersect(ray);
+				if (result.distance < 0){
+					result = left->intersect(ray);}
 			}
-		} else {
+		} else
 			result = left->intersect(ray);
-		}
 	} else if (rdist >= 0)
 		result = right->intersect(ray);
 
@@ -40,10 +39,9 @@ fvec3 hsv2rgb(const fvec3 &c) {
     return c.z * lerp(fvec3(K.x), saturate(p - fvec3(K.x)), c.y);
 }
 
-bvh_node::intersection bvh_leaf::intersect(const ray &ray) {
-	
-	float dist = aabb.intersect(ray);
-	return { dist, hsv2rgb(fvec3(reinterpret_cast<size_t>(this) % 257 / 257.0F, 0.7F, 1)), 0 };
+kd_tree_node::intersection kd_tree_leaf::intersect(const ray &ray) {
+	// float dist = aabb.intersect(ray);
+	// return { dist, hsv2rgb(fvec3(reinterpret_cast<size_t>(this) % 257 / 257.0F, 0.7F, 1)), 0 };
 
 	triangle::intersection nearest_hit;
 	uint32_t index = 0;

@@ -25,8 +25,9 @@ float aabb::intersect(const ray &ray) const {
 	if (any(min > max))
 		return -1;
 
-	fvec3 min_bounds_distances = (min - ray.origin) / ray.get_dir();
-	fvec3 max_bounds_distances  = (max - ray.origin) / ray.get_dir();
+	fvec3 inv_dir = fvec3::one / ray.get_dir();
+	fvec3 min_bounds_distances = (min - ray.origin) * inv_dir;
+	fvec3 max_bounds_distances  = (max - ray.origin) * inv_dir;
 
 	fvec3 near_distances = math::min(min_bounds_distances, max_bounds_distances);
 	fvec3 far_distances = math::max(min_bounds_distances, max_bounds_distances);

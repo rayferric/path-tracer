@@ -4,109 +4,100 @@ using namespace math;
 
 namespace renderer {
 
-bvh_node *instantiate_bvh_node(uint32_t triangles_per_node, float tolerance, const std::vector<triangle> &triangles, const std::vector<uint32_t> &indices, uint32_t split_axis) {
-	// Instantiate BVH node
-	bvh_node *node;
-	if (triangles.size() > triangles_per_node)
-		node = new bvh_branch;
-	else
-		node = new bvh_leaf;
+kd_tree_node *instantiate_kd_tree_node(
+		const aabb &aabb,
+		const std::vector<triangle> &triangles,
+		const std::vector<uint32_t> &indices,
+		uint8_t depth) {
+	
+	// Create leaf node once
+	// we've reached certain depth
+	if (depth == 0) {
+		auto node = new kd_tree_leaf;
+		node->aabb = aabb;
+		
+		(node->triangles = triangles).shrink_to_fit();
+		(node->indices = indices).shrink_to_fit();
 
-	// Initialize AABB which is common to both types
-	node->aabb.clear();
-	for (const renderer::triangle &triangle : triangles) {
-		for (size_t i = 0; i < 3; i++)
-			node->aabb.add_point(*(&triangle.a + i));
+		return node;
 	}
 
-	// Initialize remaining fields
-	if (triangles.size() > triangles_per_node) {
-		// Split triagle list in two
-		// Some triangles might get
-		// assigned to both L and R sets
+	auto node = new kd_tree_branch;
+	node->aabb = aabb;
 
-		std::vector<triangle> ltriangles, rtriangles;
-		std::vector<uint32_t> lindices, rindices;
+	// We split in the middle
+	fvec3 widths = aabb.max - aabb.min;
+	size_t split_axis = std::max_element(&widths.x,
+			&widths.x + 3) - &widths.x;
+	float split_pos = aabb.min[split_axis] +
+			widths[split_axis] * 0.5F;
 
-		ltriangles.reserve(triangles.size());
-		rtriangles.reserve(triangles.size());
-		lindices.reserve(indices.size());
-		rindices.reserve(indices.size());
+	// Split the AABB
+	renderer::aabb laabb, raabb;
+	laabb = raabb = aabb;
 
-		// Pick initial split axis
-		fvec3 widths = node->aabb.max - node->aabb.min;
-		if (split_axis == -1)
-			split_axis = std::max_element(&widths.x,
-					&widths.x + 3) - &widths.x;
-		float split_pos = node->aabb.min[split_axis]
-				+ (widths[split_axis] * 0.5F);
+	// Left node contains objects
+	// with smaller position
+	laabb.max[split_axis] = split_pos;
+	raabb.min[split_axis] = split_pos;
 
-		for (size_t i = 0; i < triangles.size(); i++) {
-			const triangle &triangle = triangles[i];
-			uint32_t index = indices[i];
+	// Split triangles and their indices
+	std::vector<triangle> ltriangles, rtriangles;
+	ltriangles.reserve(triangles.size());
+	rtriangles.reserve(triangles.size());
 
-			bool lassign = false, rassign = false;
-			
-			for (size_t i = 0; i < 3; i++) {
-				const fvec3 &vertex = *(&triangle.a + i);
-				if (vertex[split_axis] < split_pos)
-					lassign = true;
-				else
-					rassign = true;
-			}
+	std::vector<uint32_t> lindices, rindices;
+	lindices.reserve(indices.size());
+	rindices.reserve(indices.size());
 
-			if (lassign) {
-				ltriangles.push_back(triangle);
-				lindices.push_back(index);
-			}
+	for (size_t i = 0; i < triangles.size(); i++) {
+		const triangle &triangle = triangles[i];
+		uint32_t index = indices[i];
 
-			if (rassign) {
-				rtriangles.push_back(triangle);
-				rindices.push_back(index);
-			}
+		bool lassign = false, rassign = false;
+		
+		for (size_t i = 0; i < 3; i++) {
+			const fvec3 &vertex = *(&triangle.a + i);
+			if (vertex[split_axis] < split_pos)
+				lassign = true;
+			else
+				rassign = true;
 		}
 
-		if (ltriangles.size() < triangles.size() && rtriangles.size() < triangles.size()) {
-			std::cout << "Node split in two: " << triangles.size() << " -> " << ltriangles.size() << " | " << rtriangles.size() << " (Split axis: " << split_axis << ")" << std::endl;
-
-			ltriangles.shrink_to_fit();
-			rtriangles.shrink_to_fit();
-			lindices.shrink_to_fit();
-			rindices.shrink_to_fit();
-
-			split_axis = (split_axis + 1) % 3;
-
-			if (ltriangles.size() > 0)
-				static_cast<bvh_branch *>(node
-						)->left.reset(instantiate_bvh_node(
-						triangles_per_node, tolerance, ltriangles, lindices, split_axis));
-
-			if (rtriangles.size() > 0)
-				static_cast<bvh_branch *>(node
-						)->right.reset(instantiate_bvh_node(
-						triangles_per_node, tolerance, rtriangles, rindices, split_axis));
-			
-			return node;
+		if (lassign) {
+			ltriangles.push_back(triangle);
+			lindices.push_back(index);
 		}
 
-		// Replace unsuccessful branch with a leaf
-		bvh_node *new_node = new bvh_leaf;
-		new_node->aabb = node->aabb;
-		delete node;
-		node = new_node;
+		if (rassign) {
+			rtriangles.push_back(triangle);
+			rindices.push_back(index);
+		}
 	}
 
-	// Initialize leaf
-	static_cast<bvh_leaf *>(node
-			)->triangles = triangles;
-	static_cast<bvh_leaf *>(node
-			)->indices = indices;
-	std::cout << "Finalized branch - leaf size: " << triangles.size() << std::endl;
+	if (ltriangles.size() > 0) {
+		node->left.reset(instantiate_kd_tree_node(
+				laabb, ltriangles, lindices,
+				depth - 1));
+	}
+
+	if (rtriangles.size() > 0) {
+		node->right.reset(instantiate_kd_tree_node(
+				raabb, rtriangles, rindices,
+				depth - 1));
+	}
 
 	return node;
 }
 
-void mesh::build_bvh(uint32_t triangles_per_node, float tolerance) {
+void mesh::build_kd_tree(uint8_t depth) {
+	// Create root AABB
+	renderer::aabb aabb;
+	aabb.clear();
+	for (vertex &v : vertices)
+		aabb.add_point(v.position);
+
+	// Convert root vertices to triangles
 	std::vector<triangle> triangles;
 	triangles.reserve(this->triangles.size());
 
@@ -115,14 +106,22 @@ void mesh::build_bvh(uint32_t triangles_per_node, float tolerance) {
 		triangles.push_back(triangle(
 			vertices[indices.x].position,
 			vertices[indices.y].position,
-			vertices[indices.z].position)
-		);
+			vertices[indices.z].position
+		));
 	}
 
+	// Initialize root triangle indices
 	std::vector<uint32_t> indices(this->triangles.size());
 	std::iota(indices.begin(), indices.end(), 0);
 
-	bvh.reset(instantiate_bvh_node(triangles_per_node, tolerance, triangles, indices, -1));
+	// Compute initial split axis
+	fvec3 widths = aabb.max - aabb.min;
+	size_t split_axis = std::max_element(&widths.x,
+			&widths.x + 3) - &widths.x;
+
+	// Build the kD tree
+	kd_tree.reset(instantiate_kd_tree_node(aabb,
+			triangles, indices, depth));
 }
 
 }
