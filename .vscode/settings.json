@@ -85,7 +85,10 @@
 		"semaphore": "cpp",
 		"typeindex": "cpp",
 		"bitset": "cpp",
-		"future": "cpp"
+		"future": "cpp",
+		"forward_list": "cpp",
+		"unordered_set": "cpp",
+		"valarray": "cpp"
 	},
 	"cmake.debugConfig": {
 		"cwd": "${workspaceFolder}"

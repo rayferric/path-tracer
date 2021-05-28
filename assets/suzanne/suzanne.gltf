@@ -18,15 +18,15 @@
             "name" : "Suzanne",
             "rotation" : [
                 0.25,
-                0.25,
-                0.0669872909784317,
+                0.2500000298023224,
+                0.06698726862668991,
                 0.9330127239227295
             ]
         }
     ],
     "meshes" : [
         {
-            "name" : "Suzanne.001",
+            "name" : "Suzanne",
             "primitives" : [
                 {
                     "attributes" : {
@@ -43,15 +43,15 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 188928,
             "max" : [
-                1.325934886932373,
+                1.3287925720214844,
                 0.9392361640930176,
-                0.8223199844360352
+                0.8226352334022522
             ],
             "min" : [
-                -1.325934886932373,
-                -0.9704862236976624,
+                -1.328792691230774,
+                -0.971822202205658,
                 -0.7782661318778992
             ],
             "type" : "VEC3"
@@ -59,47 +59,47 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 188928,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 188928,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
-            "componentType" : 5123,
-            "count" : 11808,
+            "componentType" : 5125,
+            "count" : 188928,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 94464,
+            "byteLength" : 2267136,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 94464,
-            "byteOffset" : 94464
+            "byteLength" : 2267136,
+            "byteOffset" : 2267136
         },
         {
             "buffer" : 0,
-            "byteLength" : 62976,
-            "byteOffset" : 188928
+            "byteLength" : 1511424,
+            "byteOffset" : 4534272
         },
         {
             "buffer" : 0,
-            "byteLength" : 23616,
-            "byteOffset" : 251904
+            "byteLength" : 755712,
+            "byteOffset" : 6045696
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 275520,
+            "byteLength" : 6801408,
             "uri" : "suzanne.bin"
         }
     ]

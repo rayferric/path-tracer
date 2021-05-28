@@ -254,7 +254,7 @@ mat3<T> inverse(const mat3<T> &mat) {
 		+(mat.y.x * mat.z.y - mat.z.x * mat.y.y),
 		-(mat.x.x * mat.z.y - mat.z.x * mat.x.y),
 		+(mat.x.x * mat.y.y - mat.y.x * mat.x.y)
-	) * (1.0F / det);
+	) * (1 / det);
 }
 
 template<scalar A, scalar B, scalar Epsilon>

@@ -5,7 +5,7 @@ using namespace math;
 namespace renderer {
 
 kd_tree_node *instantiate_kd_tree_node(
-		const aabb &aabb,
+		uint8_t split_axis, float split_pos,
 		const std::vector<triangle> &triangles,
 		const std::vector<uint32_t> &indices,
 		uint8_t depth) {
@@ -14,7 +14,6 @@ kd_tree_node *instantiate_kd_tree_node(
 	// we've reached certain depth
 	if (depth == 0) {
 		auto node = new kd_tree_leaf;
-		node->aabb = aabb;
 		
 		(node->triangles = triangles).shrink_to_fit();
 		(node->indices = indices).shrink_to_fit();
@@ -90,13 +89,13 @@ kd_tree_node *instantiate_kd_tree_node(
 	return node;
 }
 
-void mesh::build_kd_tree(uint8_t depth) {
-	// Create root AABB
-	renderer::aabb aabb;
+void mesh::recalculate_aabb() {
 	aabb.clear();
 	for (vertex &v : vertices)
 		aabb.add_point(v.position);
+}
 
+void mesh::build_kd_tree(uint8_t depth) {
 	// Convert root vertices to triangles
 	std::vector<triangle> triangles;
 	triangles.reserve(this->triangles.size());
@@ -122,6 +121,41 @@ void mesh::build_kd_tree(uint8_t depth) {
 	// Build the kD tree
 	kd_tree.reset(instantiate_kd_tree_node(aabb,
 			triangles, indices, depth));
+}
+
+mesh::intersection mesh::intersect(const ray &ray) {
+	intersection result;
+	std::stack<std::tuple<kd_tree_node *,
+			float, float>> stack;
+
+	while (result.distance < 0 && !stack.empty()) {
+		auto [node, split_min, split_max] = stack.top();
+		stack.pop();
+
+		while (typeid(*node) == typeid(kd_tree_branch)) {
+			auto branch = static_cast<kd_tree_branch *>(node);
+
+			float split = (branch->split - ray.origin[branch
+					->axis]) / ray.get_dir()[branch->axis];
+			
+			kd_tree_node *first, *second;
+
+			if (split - ray.origin[branch->axis] >= 0) {
+				first = branch->left.get();
+				second = branch->right.get();
+			} else {
+				first = branch->right.get();
+				second = branch->left.get();
+			}
+
+			if (split >= split_max || split < 0)
+				node = first;
+			else if (split <= split_min)
+				node = second;
+
+
+		}
+	}
 }
 
 }

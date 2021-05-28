@@ -8,29 +8,22 @@
 
 namespace renderer {
 
-struct kd_tree_node {
-	struct intersection {
-		float distance = -1;
-		math::fvec3 barycentric;
-		uint32_t index;
-	};
-	
-	renderer::aabb aabb;
-
-	virtual intersection intersect(const ray &ray) = 0;
+class kd_tree_node {
+protected:
+	kd_tree_node();
 };
 
-struct kd_tree_branch : public kd_tree_node {
+class kd_tree_branch : public kd_tree_node {
+public:
+	uint8_t axis;
+	float split;
 	std::shared_ptr<kd_tree_node> left, right;
-
-	kd_tree_node::intersection intersect(const ray &ray) override;
 };
 
-struct kd_tree_leaf : public kd_tree_node {
+class kd_tree_leaf : public kd_tree_node {
+public:
 	std::vector<triangle> triangles;
 	std::vector<uint32_t> indices;
-
-	kd_tree_node::intersection intersect(const ray &ray) override;
 };
 
 }
