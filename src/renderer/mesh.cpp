@@ -5,11 +5,12 @@ using namespace math;
 namespace renderer {
 
 kd_tree_node *instantiate_kd_tree_node(
-		uint8_t split_axis, float split_pos,
+		const aabb &aabb,
 		const std::vector<triangle> &triangles,
 		const std::vector<uint32_t> &indices,
 		uint8_t depth) {
-	
+	// TODO: Use surface area heuristics
+
 	// Create leaf node once
 	// we've reached certain depth
 	if (depth == 0) {
@@ -22,14 +23,13 @@ kd_tree_node *instantiate_kd_tree_node(
 	}
 
 	auto node = new kd_tree_branch;
-	node->aabb = aabb;
 
 	// We split in the middle
 	fvec3 widths = aabb.max - aabb.min;
-	size_t split_axis = std::max_element(&widths.x,
+	node->axis = std::max_element(&widths.x,
 			&widths.x + 3) - &widths.x;
-	float split_pos = aabb.min[split_axis] +
-			widths[split_axis] * 0.5F;
+	node->split = aabb.min[node->axis] +
+			widths[node->axis] * 0.5F;
 
 	// Split the AABB
 	renderer::aabb laabb, raabb;
@@ -37,8 +37,8 @@ kd_tree_node *instantiate_kd_tree_node(
 
 	// Left node contains objects
 	// with smaller position
-	laabb.max[split_axis] = split_pos;
-	raabb.min[split_axis] = split_pos;
+	laabb.max[node->axis] = node->split;
+	raabb.min[node->axis] = node->split;
 
 	// Split triangles and their indices
 	std::vector<triangle> ltriangles, rtriangles;
@@ -57,7 +57,7 @@ kd_tree_node *instantiate_kd_tree_node(
 		
 		for (size_t i = 0; i < 3; i++) {
 			const fvec3 &vertex = *(&triangle.a + i);
-			if (vertex[split_axis] < split_pos)
+			if (vertex[node->axis] < node->split)
 				lassign = true;
 			else
 				rassign = true;
@@ -113,49 +113,95 @@ void mesh::build_kd_tree(uint8_t depth) {
 	std::vector<uint32_t> indices(this->triangles.size());
 	std::iota(indices.begin(), indices.end(), 0);
 
-	// Compute initial split axis
-	fvec3 widths = aabb.max - aabb.min;
-	size_t split_axis = std::max_element(&widths.x,
-			&widths.x + 3) - &widths.x;
-
 	// Build the kD tree
 	kd_tree.reset(instantiate_kd_tree_node(aabb,
 			triangles, indices, depth));
 }
 
-mesh::intersection mesh::intersect(const ray &ray) {
-	intersection result;
-	std::stack<std::tuple<kd_tree_node *,
-			float, float>> stack;
+fvec3 hsv2rgb(const fvec3 &c) {
+    fvec4 K = fvec4(1, 0.666667F, 0.333333F, 3);
+    fvec3 p = abs(fract(fvec3(c.x + K.x, c.x + K.y, c.x + K.z)) * 6 - fvec3(K.w));
+    return c.z * lerp(fvec3(K.x), saturate(p - fvec3(K.x)), c.y);
+}
 
-	while (result.distance < 0 && !stack.empty()) {
-		auto [node, split_min, split_max] = stack.top();
+mesh::intersection mesh::intersect(const ray &ray) const {
+	auto result = aabb.intersect(ray);
+	if (result.far < 0)
+		return {};
+
+	std::stack<std::tuple<const kd_tree_node *, float, float>> stack;
+	stack.push(std::make_tuple(kd_tree.get(), result.near, result.far));
+
+	while (!stack.empty()) {
+		auto [node, min_dist, max_dist] = stack.top();
 		stack.pop();
 
-		while (typeid(*node) == typeid(kd_tree_branch)) {
-			auto branch = static_cast<kd_tree_branch *>(node);
+		// Explore down the tree until we reach a leaf
+		while (node && typeid(*node) == typeid(kd_tree_branch)) {
+			auto branch = static_cast<const kd_tree_branch *>(node);
 
-			float split = (branch->split - ray.origin[branch
+			// Distance to the split plane
+			float split_dist = (branch->split - ray.origin[branch
 					->axis]) / ray.get_dir()[branch->axis];
 			
-			kd_tree_node *first, *second;
+			const kd_tree_node *first, *second;
 
-			if (split - ray.origin[branch->axis] >= 0) {
+			if (ray.origin[branch->axis] < branch->split) {
 				first = branch->left.get();
 				second = branch->right.get();
 			} else {
 				first = branch->right.get();
 				second = branch->left.get();
 			}
-
-			if (split >= split_max || split < 0)
+			
+			// If ray points away from the split plane
+			// or if the back of the AABB is closer
+			// than distance to the split plane,
+			// we've hit just the first node
+			if (split_dist < 0 || split_dist > max_dist)
 				node = first;
-			else if (split <= split_min)
+
+			// When node's AABB is further away than the split plane
+			// then we've hit second node only
+			else if (split_dist < min_dist)
 				node = second;
 
+			// Otherwise we've hit them both
+			else {
+				if (second)
+					stack.push(std::make_tuple(second, split_dist, max_dist));
 
+				node = first;
+				max_dist = split_dist;
+			}
 		}
+		
+		if (!node)
+			continue;
+
+		// It's a leaf node
+		auto leaf = static_cast<const kd_tree_leaf *>(node);
+
+		triangle::intersection nearest_hit;
+		uint32_t index = 0;
+
+		for (uint32_t i = 0; i < leaf->triangles.size(); i++) {
+			auto hit = leaf->triangles[i].intersect(ray);
+			if (hit.distance >= 0 && (hit.distance <
+					nearest_hit.distance || nearest_hit.distance < 0)) {
+				nearest_hit = hit;
+				index = i;
+			}
+		}
+
+		if (nearest_hit.distance < min_dist ||
+				nearest_hit.distance > max_dist)
+			continue;
+
+		return { nearest_hit.distance, nearest_hit.barycentric, leaf->indices[index] };
 	}
+
+	return {};
 }
 
 }

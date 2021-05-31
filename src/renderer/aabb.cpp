@@ -21,9 +21,9 @@ void aabb::add_point(const fvec3 &point) {
 	max = math::max(max, point);
 }
 
-float aabb::intersect(const ray &ray) const {
+aabb::intersection aabb::intersect(const ray &ray) const {
 	if (any(min > max))
-		return -1;
+		return {};
 
 	fvec3 inv_dir = fvec3::one / ray.get_dir();
 	fvec3 min_bounds_distances = (min - ray.origin) * inv_dir;
@@ -39,15 +39,15 @@ float aabb::intersect(const ray &ray) const {
 
 	// Miss
 	if (near > far)
-		return -1;
+		return {};
 	
 	// Intersection occured behind the ray
 	if (far < 0)
-		return -1;
+		return {};
 
 	// Near might be negative
 	// if we're inside the box
-	return near > 0 ? near : far;
+	return { near, far };
 }
 
 }

@@ -31,7 +31,7 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 		for (const auto &surface : model->surfaces) {
 			const auto &mesh = surface.mesh;
 
-			auto result = mesh->kd_tree->intersect(view_ray);
+			auto result = mesh->intersect(view_ray);
 
 			if (result.distance < 0)
 				continue;

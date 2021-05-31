@@ -9,8 +9,11 @@
 namespace renderer {
 
 class kd_tree_node {
+public:
+	virtual ~kd_tree_node() {}
+	
 protected:
-	kd_tree_node();
+	kd_tree_node() {}
 };
 
 class kd_tree_branch : public kd_tree_node {
