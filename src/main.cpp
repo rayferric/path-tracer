@@ -88,7 +88,7 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 		color = normal;
 
 		// renderer::ray light_ray(
-		// 	pos + light_dir * epsilon,
+		// 	pos + light_dir * math::epsilon * 3,
 		// 	light_dir
 		// );
 
@@ -100,9 +100,9 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color += fvec3(0.1F);
 
-		color = (state.min_distance - 3.8F) * 0.2F;
-		color = fvec3(pow(color.x, 2));
-		color *= state.barycentric;
+		// color = (state.min_distance - 3.8F) * 0.2F;
+		// color = fvec3(pow(color.x, 2));
+		// color *= state.barycentric;
 	}
 
 	// color = tonemap_approx_aces(color);
@@ -110,10 +110,10 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 	return color;
 }
 
-const uint32_t resolution = 1024;
+const uint32_t resolution = 2048;
 
 int main() {
-	std::shared_ptr<entity> root = load_gltf("assets/suzanne/suzanne.gltf");
+	std::shared_ptr<entity> root = load_gltf("assets/dragon/dragon.gltf");
 
 	ray ray(
 		fvec3(0, 0, 5),

@@ -11,14 +11,21 @@ aabb::aabb() {}
 aabb::aabb(const fvec3 &min, const fvec3 &max)
 		: min(min), max(max) {}
 
+void aabb::add_point(const fvec3 &point) {
+	min = math::min(min, point);
+	max = math::max(max, point);
+}
+
 void aabb::clear() {
 	min = fvec3(std::numeric_limits<float>::max());
 	max = fvec3(std::numeric_limits<float>::min());
 }
 
-void aabb::add_point(const fvec3 &point) {
-	min = math::min(min, point);
-	max = math::max(max, point);
+float aabb::get_surface_area() const {
+	fvec3 widths = max - min;
+	return (widths.x * widths.y +
+			widths.y * widths.z +
+			widths.x * widths.z) * 2;
 }
 
 aabb::intersection aabb::intersect(const ray &ray) const {

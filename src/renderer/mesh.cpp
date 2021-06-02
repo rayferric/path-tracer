@@ -6,8 +6,9 @@ namespace renderer {
 
 namespace kd_tree_builder {
 
-kd_tree_node *init_leaf(std::vector<triangle> &&
-		triangles, std::vector<uint32_t> &&indices) {
+kd_tree_node *init_leaf(
+		std::vector<triangle> &&triangles,
+		std::vector<uint32_t> &&indices) {
 	auto node = new kd_tree_leaf;
 		
 	(node->triangles = std::move(triangles)).shrink_to_fit();
@@ -16,12 +17,27 @@ kd_tree_node *init_leaf(std::vector<triangle> &&
 	return node;
 }
 
-std::tuple<std::vector<triangle>, std::vector<triangle>,
-		std::vector<uint32_t>, std::vector<uint32_t>,
-		aabb, aabb> split_build_data(
+std::tuple<aabb, aabb> split_aabb(
+		const aabb &aabb,
+		uint8_t axis, float split) {
+	renderer::aabb laabb, raabb;
+	laabb = raabb = aabb;
+
+	// Left node contains objects
+	// with smaller position
+	laabb.max[axis] = split;
+	raabb.min[axis] = split;
+
+	return { laabb, raabb };
+}
+
+std::tuple<
+		std::vector<triangle>, std::vector<triangle>,
+		std::vector<uint32_t>, std::vector<uint32_t>
+		> split_triangles(
 		const std::vector<triangle> &triangles,
 		const std::vector<uint32_t> &indices,
-		const aabb &aabb, uint8_t axis, float split) {
+		uint8_t axis, float split) {
 	// Split triangles and their indices
 	std::vector<triangle> ltriangles, rtriangles;
 	ltriangles.reserve(triangles.size());
@@ -56,23 +72,14 @@ std::tuple<std::vector<triangle>, std::vector<triangle>,
 		}
 	}
 	
-	// Split the AABB
-	renderer::aabb laabb, raabb;
-	laabb = raabb = aabb;
-
-	// Left node contains objects
-	// with smaller position
-	laabb.max[axis] = split;
-	raabb.min[axis] = split;
-	
-	return std::make_tuple(ltriangles, rtriangles,
-			lindices, rindices, laabb, raabb);
+	return { ltriangles, rtriangles,
+			lindices, rindices };
 }
 
-kd_tree_node *init_median_node(
-		const aabb &aabb,
-		std::vector<triangle> &triangles,
-		std::vector<uint32_t> &indices,
+kd_tree_node *init_node_median(
+		aabb &&aabb,
+		std::vector<triangle> &&triangles,
+		std::vector<uint32_t> &&indices,
 		uint8_t depth) {
 	// Create leaf node once
 	// we've reached certain depth
@@ -89,30 +96,38 @@ kd_tree_node *init_median_node(
 	node->split = aabb.min[node->axis] +
 			widths[node->axis] * 0.5F;
 
-	auto [ltriangles, rtriangles, lindices,
-			rindices, laabb, raabb] =
-			split_build_data(triangles,
-			indices, aabb, node->axis, node->split);
+	auto [laabb, raabb] = split_aabb(aabb,
+			node->axis, node->split);
+
+	auto [ltriangles, rtriangles,
+			lindices, rindices] =
+			split_triangles(triangles,
+			indices, node->axis, node->split);
 
 	if (ltriangles.size() > 0) {
-		node->left.reset(init_median_node(
-				laabb, ltriangles, lindices,
-				depth - 1));
-	}
+			node->left.reset(init_node_median(
+					std::move(laabb),
+					std::move(ltriangles),
+					std::move(lindices),
+					depth - 1));
+		}
 
-	if (rtriangles.size() > 0) {
-		node->right.reset(init_median_node(
-				raabb, rtriangles, rindices,
-				depth - 1));
-	}
+		if (rtriangles.size() > 0) {
+			node->right.reset(init_node_median(
+					std::move(raabb),
+					std::move(rtriangles),
+					std::move(rindices),
+					depth - 1));
+		}
 
 	return node;
 }
 
-kd_tree_node *init_sah_node(
-		const aabb &aabb,
-		std::vector<triangle> &triangles,
-		std::vector<uint32_t> &indices,
+// Alternative to init_node_median
+kd_tree_node *init_node_sah(
+		aabb &&aabb,
+		std::vector<triangle> &&triangles,
+		std::vector<uint32_t> &&indices,
 		uint8_t depth) {
 	// Create leaf node once
 	// we've reached maximum depth
@@ -123,7 +138,7 @@ kd_tree_node *init_sah_node(
 
 	fvec3 widths = aabb.max - aabb.min;
 	
-	float base_cost = triangles.size();
+	float base_cost = triangles.size() * aabb.get_surface_area();
 	float best_cost = base_cost;
 	uint8_t best_axis;
 	float best_split;
@@ -144,34 +159,44 @@ kd_tree_node *init_sah_node(
 		
 		std::sort(bounds.begin(), bounds.end(), [] (auto &x, auto &y) { return get<0>(x) < get<0>(y); });
 		
+		float split;
 		uint32_t lcount = 0;
 		uint32_t rcount = triangles.size();
-		float split = get<0>(bounds[0]) - math::epsilon;
 		
 		for (size_t i = 0; i <= bounds.size(); i++) {
-			if (i != 0) {
-				auto &bound = bounds[i - 1];
+			if (i == 0)
+				split = get<0>(bounds.front()) - math::epsilon;
+			else if (i == bounds.size()) {
+				// Last event is always END
+				rcount--;
+				split = get<0>(bounds.back()) + math::epsilon;
+			} else {
+				auto &prev_bound = bounds[i - 1];
+				auto &next_bound = bounds[i];
 
-				if (get<1>(bound))
+				if (get<1>(prev_bound))
 					lcount++;
 				else
 					rcount--;
 
-				float new_split = clamp(get<0>(bound) + math::epsilon,
-						aabb.min[axis], aabb.max[axis]);
-
-				if (new_split == split)
+				if (get<0>(prev_bound) == get<0>(next_bound))
 					continue;
-				
-				split = new_split;
+
+				split = (get<0>(prev_bound) + get<0>(next_bound)) * 0.5F;
 			}
 
-			float fac = (split - aabb.min[axis]) / widths[axis];
+			// Accumulate events until we enter the AABB
+			if (split <= aabb.min[axis])
+				continue;
 
-			float lprob = (1/3.0F) + (2/3.0F) * fac;
-			float rprob = (1/3.0F) + (2/3.0F) * (1 - fac);	
+			if (split >= aabb.max[axis])
+				break;
 
-			float cost = lcount * lprob + rcount * rprob;
+			auto [laabb, raabb] = split_aabb(
+					aabb, axis, split);
+
+			float cost = lcount * laabb.get_surface_area()
+					   + rcount * raabb.get_surface_area();
 
 			if (cost < best_cost) {
 				best_cost = cost;
@@ -187,28 +212,34 @@ kd_tree_node *init_sah_node(
 		node->axis = best_axis;
 		node->split = best_split;
 
-		auto [ltriangles, rtriangles, lindices,
-			rindices, laabb, raabb] =
-			split_build_data(triangles,
-			indices, aabb, node->axis, node->split);
+		auto [laabb, raabb] = split_aabb(aabb,
+					node->axis, node->split);
+
+		auto [ltriangles, rtriangles,
+				lindices, rindices] =
+				split_triangles(triangles, indices,
+				node->axis, node->split);
 
 		if (ltriangles.size() > 0) {
-			node->left.reset(init_sah_node(
-					laabb, ltriangles, lindices,
+			node->left.reset(init_node_sah(
+					std::move(laabb),
+					std::move(ltriangles),
+					std::move(lindices),
 					depth - 1));
 		}
 
 		if (rtriangles.size() > 0) {
-			node->right.reset(init_sah_node(
-					raabb, rtriangles, rindices,
+			node->right.reset(init_node_sah(
+					std::move(raabb),
+					std::move(rtriangles),
+					std::move(rindices),
 					depth - 1));
 		}
 
 		return node;
 	} else {
-		if (math::min(widths.x, widths.y, widths.z) > 0.1)
-			std::cout << "Bad things happen!" << std::endl;
-		return init_leaf(std::move(triangles),
+		return init_leaf(
+				std::move(triangles),
 				std::move(indices));
 	}
 }
@@ -240,8 +271,19 @@ void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
 	std::iota(indices.begin(), indices.end(), 0);
 
 	// Build the kD tree
-	kd_tree.reset(kd_tree_builder::init_sah_node(
-			aabb, triangles, indices, max_depth));
+	if (use_sah) {
+		kd_tree.reset(kd_tree_builder::init_node_sah(
+				std::move(aabb),
+				std::move(triangles),
+				std::move(indices),
+				max_depth));
+	} else {
+		kd_tree.reset(kd_tree_builder::init_node_median(
+				std::move(aabb),
+				std::move(triangles),
+				std::move(indices),
+				max_depth));
+	}
 }
 
 fvec3 hsv2rgb(const fvec3 &c) {
@@ -307,7 +349,7 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 
 		//
 
-		return { min_dist, hsv2rgb(fvec3(reinterpret_cast<size_t>(node) % 257 / 257.0F, 0.7F, 1)), 0 };
+		//return { min_dist, hsv2rgb(fvec3(reinterpret_cast<size_t>(node) % 257 / 257.0F, 0.7F, 1)), 0 };
 
 		// It's a leaf node
 		auto leaf = static_cast<const kd_tree_leaf *>(node);

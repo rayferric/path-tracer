@@ -15,18 +15,34 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "Suzanne",
+            "name" : "suzanne",
             "rotation" : [
                 0.25,
-                0.2500000298023224,
-                0.06698726862668991,
+                0.25,
+                0.0669873058795929,
                 0.9330127239227295
             ]
         }
     ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "suzanne",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        }
+    ],
     "meshes" : [
         {
-            "name" : "Suzanne",
+            "name" : "Suzanne.001",
             "primitives" : [
                 {
                     "attributes" : {
@@ -34,7 +50,8 @@
                         "NORMAL" : 1,
                         "TEXCOORD_0" : 2
                     },
-                    "indices" : 3
+                    "indices" : 3,
+                    "material" : 0
                 }
             ]
         }
@@ -43,14 +60,14 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 188928,
+            "count" : 9765,
             "max" : [
-                1.3287925720214844,
+                1.328185796737671,
                 0.9392361640930176,
-                0.8226352334022522
+                0.8224414587020874
             ],
             "min" : [
-                -1.328792691230774,
+                -1.328185796737671,
                 -0.971822202205658,
                 -0.7782661318778992
             ],
@@ -59,47 +76,47 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 188928,
+            "count" : 9765,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 188928,
+            "count" : 9765,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
-            "componentType" : 5125,
-            "count" : 188928,
+            "componentType" : 5123,
+            "count" : 47232,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 2267136,
+            "byteLength" : 117180,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 2267136,
-            "byteOffset" : 2267136
+            "byteLength" : 117180,
+            "byteOffset" : 117180
         },
         {
             "buffer" : 0,
-            "byteLength" : 1511424,
-            "byteOffset" : 4534272
+            "byteLength" : 78120,
+            "byteOffset" : 234360
         },
         {
             "buffer" : 0,
-            "byteLength" : 755712,
-            "byteOffset" : 6045696
+            "byteLength" : 94464,
+            "byteOffset" : 312480
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 6801408,
+            "byteLength" : 406944,
             "uri" : "suzanne.bin"
         }
     ]

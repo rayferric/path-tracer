@@ -16,9 +16,11 @@ struct aabb {
 
 	aabb(const math::fvec3 &min, const math::fvec3 &max);
 
+	void add_point(const math::fvec3 &point);
+
 	void clear();
 
-	void add_point(const math::fvec3 &point);
+	float get_surface_area() const;
 
 	intersection intersect(const ray &ray) const;
 };

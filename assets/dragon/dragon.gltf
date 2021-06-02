@@ -1,0 +1,128 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.5.17",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "dragon_vrip",
+            "rotation" : [
+                0.25,
+                0.25,
+                0.0669873058795929,
+                0.9330127239227295
+            ],
+            "translation" : [
+                0.12243225425481796,
+                -0.5392895340919495,
+                0
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "dragon",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.4000000059604645
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "dragon_vrip",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 518925,
+            "max" : [
+                1.1648892164230347,
+                1.7329264879226685,
+                0.4970908463001251
+            ],
+            "min" : [
+                -1.3067249059677124,
+                -0.009512192569673061,
+                -0.6081534624099731
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 518925,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 518925,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5125,
+            "count" : 2614242,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 6227100,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 6227100,
+            "byteOffset" : 6227100
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 4151400,
+            "byteOffset" : 12454200
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 10456968,
+            "byteOffset" : 16605600
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 27062568,
+            "uri" : "dragon.bin"
+        }
+    ]
+}
