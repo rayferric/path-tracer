@@ -100,9 +100,9 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color += fvec3(0.1F);
 
-		// color = (state.min_distance - 3.8F) * 0.2F;
-		// color = fvec3(pow(color.x, 2));
-		// color *= state.barycentric;
+		color = (state.min_distance - 3.8F) * 0.2F;
+		color = fvec3(pow(color.x, 2));
+		color *= state.barycentric;
 	}
 
 	// color = tonemap_approx_aces(color);

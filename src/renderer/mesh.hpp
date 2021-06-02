@@ -36,7 +36,7 @@ struct mesh {
 
 	void recalculate_aabb();
 
-	void build_kd_tree(uint8_t depth = 20);
+	void build_kd_tree(bool use_sah = true, uint8_t max_depth = 10);
 
 	intersection intersect(const ray &ray) const;
 };
