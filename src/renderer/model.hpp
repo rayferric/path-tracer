@@ -15,7 +15,15 @@ public:
 		std::shared_ptr<renderer::material> material;
 	};
 
+	struct intersection {
+		float distance;
+		size_t surface_index;
+		
+	};
+
 	std::vector<surface> surfaces;
+
+	intersection intersect(const ray &ray) const;
 };
 
 }

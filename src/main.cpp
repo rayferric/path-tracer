@@ -85,27 +85,27 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 		normal += state.barycentric.y * state.v2->normal;
 		normal += state.barycentric.z * state.v3->normal;
 
-		color = normal;
+		// color = normal;
 
-		// renderer::ray light_ray(
-		// 	pos + light_dir * math::epsilon * 3,
-		// 	light_dir
-		// );
+		renderer::ray light_ray(
+			pos + light_dir * math::epsilon * 3,
+			light_dir
+		);
 
-		// state = { false };
-		// trace_entity(state, entity, light_ray);
+		state = { false };
+		trace_entity(state, entity, light_ray);
 
-		// if (!state.hit)
-		// 	color = fvec3(math::max(math::dot(normal, light_dir), 0));
+		if (!state.hit)
+			color = fvec3(math::max(math::dot(normal, light_dir), 0));
 
-		// color += fvec3(0.1F);
+		color += fvec3(0.1F);
 
 		// color = (state.min_distance - 3.8F) * 0.2F;
 		// color = fvec3(pow(color.x, 2));
 		// color *= state.barycentric;
 	}
 
-	// color = tonemap_approx_aces(color);
+	color = tonemap_approx_aces(color);
 
 	return color;
 }

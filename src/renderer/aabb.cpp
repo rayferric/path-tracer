@@ -47,13 +47,12 @@ aabb::intersection aabb::intersect(const ray &ray) const {
 	// Miss
 	if (near > far)
 		return {};
-	
-	// Intersection occured behind the ray
-	if (far < 0)
-		return {};
 
 	// Near might be negative
 	// if we're inside the box
+	//
+	// Far is negative when intersection
+	// occured behind the ray
 	return { near, far };
 }
 

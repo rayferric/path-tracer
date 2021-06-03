@@ -82,10 +82,11 @@ kd_tree_node *init_node_median(
 		std::vector<uint32_t> &&indices,
 		uint8_t depth) {
 	// Create leaf node once
-	// we've reached certain depth
-	if (depth == 0)
+	// we've reached maximum depth
+	if (depth == 0) {
 		return init_leaf(std::move(triangles),
 				std::move(indices));
+	}
 
 	auto node = new kd_tree_branch;
 
@@ -286,12 +287,6 @@ void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
 	}
 }
 
-fvec3 hsv2rgb(const fvec3 &c) {
-    fvec4 K = fvec4(1, 0.666667F, 0.333333F, 3);
-    fvec3 p = abs(fract(fvec3(c.x + K.x, c.x + K.y, c.x + K.z)) * 6 - fvec3(K.w));
-    return c.z * lerp(fvec3(K.x), saturate(p - fvec3(K.x)), c.y);
-}
-
 mesh::intersection mesh::intersect(const ray &ray) const {
 	auto result = aabb.intersect(ray);
 	if (result.far < 0)
@@ -347,10 +342,6 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 		if (!node)
 			continue;
 
-		//
-
-		//return { min_dist, hsv2rgb(fvec3(reinterpret_cast<size_t>(node) % 257 / 257.0F, 0.7F, 1)), 0 };
-
 		// It's a leaf node
 		auto leaf = static_cast<const kd_tree_leaf *>(node);
 
@@ -359,18 +350,22 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 
 		for (uint32_t i = 0; i < leaf->triangles.size(); i++) {
 			auto hit = leaf->triangles[i].intersect(ray);
-			if (hit.distance >= 0 && (hit.distance <
-					nearest_hit.distance || nearest_hit.distance < 0)) {
+			if (hit.distance >= 0 && hit.distance <= max_dist &&
+					(hit.distance < nearest_hit.distance ||
+					nearest_hit.distance < 0)) {
 				nearest_hit = hit;
 				index = i;
 			}
 		}
 
-		if (nearest_hit.distance < min_dist ||
-				nearest_hit.distance > max_dist)
+		if (nearest_hit.distance < 0)
 			continue;
 
-		return { nearest_hit.distance, nearest_hit.barycentric, leaf->indices[index] };
+		return {
+			nearest_hit.distance,
+			nearest_hit.barycentric,
+			leaf->indices[index]
+		};
 	}
 
 	return {};
