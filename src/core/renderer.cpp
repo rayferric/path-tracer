@@ -1,21 +1,25 @@
-#include "scene/load_gltf.hpp"
+#include "core/renderer.hpp"
 
-#include "renderer/mesh.hpp"
-#include "renderer/model.hpp"
+#include "core/mesh.hpp"
+#include "scene/model.hpp"
+#include "math/vec2.hpp"
+#include "math/vec3.hpp"
+#include "math/mat3.hpp"
 #include "scene/entity.hpp"
+#include "scene/transform.hpp"
 
 using namespace math;
-using namespace renderer;
+using namespace scene;
 
-namespace scene {
+namespace core {
 
 static std::shared_ptr<mesh> process_ai_mesh(aiMesh *ai_mesh) {
-	std::shared_ptr<mesh> mesh = std::make_shared<renderer::mesh>();
+	std::shared_ptr<mesh> mesh = std::make_shared<core::mesh>();
 
 	mesh->vertices.resize(ai_mesh->mNumVertices);
 
 	for (size_t i = 0; i < mesh->vertices.size(); i++) {
-		mesh::vertex &v = mesh->vertices[i];
+		vertex &v = mesh->vertices[i];
 
 		v.position  = *reinterpret_cast<fvec3 *>
 				(ai_mesh->mVertices + i);
@@ -70,7 +74,7 @@ static std::shared_ptr<entity> process_ai_node(aiNode *ai_node,
 
 	uint32_t *ai_mesh_indices = ai_node->mMeshes;
 	if (ai_mesh_indices) {
-		auto model = entity->add_component<renderer::model>();
+		auto model = entity->add_component<scene::model>();
 
 		for (uint32_t i = 0; i < ai_node->mNumMeshes; i++)
 			model->surfaces.push_back(surfaces[ai_mesh_indices[i]]);
@@ -79,13 +83,15 @@ static std::shared_ptr<entity> process_ai_node(aiNode *ai_node,
 	return entity;
 }
 
-std::shared_ptr<entity> load_gltf(
-		const std::filesystem::path &path) {
+void renderer::load_gltf(const std::filesystem::path &path) {
 	// Import file
 
 	Assimp::Importer importer;
-	const aiScene *ai_scene = importer.ReadFile(path.string(), aiProcess_Triangulate |
-			aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices);
+	const aiScene *ai_scene =
+			importer.ReadFile(path.string(),
+			aiProcess_Triangulate |
+			aiProcess_CalcTangentSpace |
+			aiProcess_JoinIdenticalVertices);
 
 	if(!ai_scene || (ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) > 0
 			|| !ai_scene->mRootNode)
@@ -97,7 +103,7 @@ std::shared_ptr<entity> load_gltf(
 	surfaces.reserve(ai_scene->mNumMeshes);
 
 	std::shared_ptr<material> material
-			= std::make_shared<renderer::material>();
+			= std::make_shared<core::material>();
 
 	for(uint32_t i = 0; i < ai_scene->mNumMeshes; i++) {
 		aiMesh *ai_mesh = ai_scene->mMeshes[i];
@@ -109,7 +115,17 @@ std::shared_ptr<entity> load_gltf(
 
 	// Instantiate nodes
 
-	return process_ai_node(ai_scene->mRootNode, surfaces);
+	root = process_ai_node(ai_scene->mRootNode, surfaces);
+
+	// Load cameras
+
+	for(uint32_t i = 0; i < ai_scene->mNumCameras; i++) {
+		aiCamera *ai_camera = ai_scene->mCameras[i];
+
+		//Map horizontal to vertical
+		float fov = ai_camera->mHorizontalFOV / ai_camera->mAspect;
+		
+	}
 }
 
 }

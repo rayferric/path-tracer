@@ -1,8 +1,8 @@
-#include "renderer/ray.hpp"
+#include "core/ray.hpp"
 
 using namespace math;
 
-namespace renderer {
+namespace core {
 
 ray::ray(const fvec3 &origin, const fvec3 &dir)
 		: origin(origin), dir(normalize(dir)) {}

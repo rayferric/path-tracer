@@ -10,6 +10,8 @@ class component {
 public:
 	std::shared_ptr<entity> get_parent() const;
 
+	virtual ~component() {}
+
 private:
 	friend entity;
 
@@ -17,3 +19,5 @@ private:
 };
 
 }
+
+#include "scene/entity.hpp"

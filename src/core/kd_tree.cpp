@@ -1,11 +1,11 @@
-#include "renderer/kd_tree.hpp"
+#include "core/kd_tree.hpp"
 
 #include "math/vec3.hpp"
 #include "math/vec4.hpp"
 
 using namespace math;
 
-namespace renderer {
+namespace core {
 
 // kd_tree_node::intersection kd_tree_branch::intersect(const ray &ray) {
 // 	kd_tree_node::intersection result, r1, r2;

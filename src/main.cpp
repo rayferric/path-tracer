@@ -1,14 +1,14 @@
 #include "pch.hpp"
 
 #include "math/mat3.hpp"
-#include "renderer/model.hpp"
-#include "renderer/triangle.hpp"
+#include "scene/model.hpp"
+#include "core/triangle.hpp"
 #include "scene/entity.hpp"
 #include "texture/image_texture.hpp"
 #include "scene/load_gltf.hpp"
 
 using namespace math;
-using namespace renderer;
+using namespace core;
 using namespace scene;
 
 struct trace_state {
@@ -20,10 +20,10 @@ struct trace_state {
 };
 
 void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, const ray &ray) {
-	if (auto model = entity->get_component<renderer::model>()) {
+	if (auto model = entity->get_component<scene::model>()) {
 		transform transform = entity->get_global_transform().inverse();
 
-		renderer::ray view_ray(
+		core::ray view_ray(
 			transform * ray.origin,
 			transform.basis * ray.get_dir()
 		);
@@ -33,7 +33,7 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 
 			auto result = mesh->intersect(view_ray);
 
-			if (result.distance < 0)
+			if (!result.has_hit())
 				continue;
 		
 			if (!state.hit || result.distance < state.min_distance) {
@@ -87,7 +87,7 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color = normal;
 
-		renderer::ray light_ray(
+		core::ray light_ray(
 			pos + light_dir * math::epsilon * 3,
 			light_dir
 		);

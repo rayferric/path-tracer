@@ -61,12 +61,13 @@ std::shared_ptr<entity> entity::find_child(
 	return current;
 }
 
-transform &entity::get_local_transform() {
+const transform &entity::get_local_transform() const {
 	return local_transform;
 }
 
-const transform &entity::get_local_transform() const {
-	return local_transform;
+void entity::set_local_transform(const transform &transform) {
+	local_transform = transform;
+	invalidate_global_transform();
 }
 
 const transform &entity::get_global_transform() {

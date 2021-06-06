@@ -2,7 +2,7 @@
 
 #include "math/vec3.hpp"
 
-namespace renderer {
+namespace core {
 
 class ray {
 public:
@@ -13,6 +13,8 @@ public:
 	math::fvec3 get_dir() const;
 
 	void set_dir(const math::fvec3 &dir);
+
+	ray transform(const transform &transform)
 
 private:
 	math::fvec3 dir;

@@ -2,11 +2,11 @@
 
 #include "pch.hpp"
 
-#include "renderer/aabb.hpp"
-#include "renderer/ray.hpp"
-#include "renderer/triangle.hpp"
+#include "core/aabb.hpp"
+#include "core/ray.hpp"
+#include "core/triangle.hpp"
 
-namespace renderer {
+namespace core {
 
 class kd_tree_node {
 public:

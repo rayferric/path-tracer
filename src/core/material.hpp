@@ -5,7 +5,7 @@
 #include "math/vec3.hpp"
 #include "texture/texture.hpp"
 
-namespace renderer {
+namespace core {
 
 struct material {
 	bool culling, translucent;

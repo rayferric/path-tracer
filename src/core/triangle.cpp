@@ -1,10 +1,14 @@
-#include "renderer/triangle.hpp"
+#include "core/triangle.hpp"
 
 #include "math/mat3.hpp"
 
 using namespace math;
 
-namespace renderer {
+namespace core {
+
+bool triangle::intersection::has_hit() const {
+	return distance >= 0;
+}
 
 triangle::triangle(
 		const fvec3 &a,
@@ -152,12 +156,10 @@ triangle::intersection triangle::intersect(const ray &ray) const {
 		  v.x * c3
 	);
 
-	// If hit occurs behind the ray
-	if (dist < 0)
-		return { -1 };
-
 	float alpha = 1 - beta - gamma;
 
+	// Distance is negative if
+	// hit occurs behind the ray
 	return { dist, fvec3(alpha, beta, gamma) };
 }
 

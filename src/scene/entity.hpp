@@ -23,9 +23,9 @@ public:
 
 	std::shared_ptr<entity> find_child(const std::string &path);
 
-	transform &get_local_transform();
-
 	const transform &get_local_transform() const;
+
+	void set_local_transform(const transform &transform);
 
 	const transform &get_global_transform();
 

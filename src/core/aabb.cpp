@@ -1,19 +1,28 @@
-#include "renderer/aabb.hpp"
+#include "core/aabb.hpp"
 
 #include "math/math.hpp"
 
 using namespace math;
 
-namespace renderer {
+namespace core {
+
+bool aabb::intersection::has_hit() const {
+	return far >= 0;
+}
 
 aabb::aabb() {}
 
 aabb::aabb(const fvec3 &min, const fvec3 &max)
 		: min(min), max(max) {}
 
-void aabb::add_point(const fvec3 &point) {
+void aabb::add(const fvec3 &point) {
 	min = math::min(min, point);
 	max = math::max(max, point);
+}
+
+void aabb::add(const aabb &aabb) {
+	add(aabb.min);
+	add(aabb.max);
 }
 
 void aabb::clear() {

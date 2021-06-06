@@ -1,12 +1,12 @@
-#include "renderer/mesh.hpp"
+#include "core/mesh.hpp"
 
 using namespace math;
 
-namespace renderer {
+namespace core {
 
 namespace kd_tree_builder {
 
-kd_tree_node *init_leaf(
+static kd_tree_node *init_leaf(
 		std::vector<triangle> &&triangles,
 		std::vector<uint32_t> &&indices) {
 	auto node = new kd_tree_leaf;
@@ -17,10 +17,10 @@ kd_tree_node *init_leaf(
 	return node;
 }
 
-std::tuple<aabb, aabb> split_aabb(
+static std::tuple<aabb, aabb> split_aabb(
 		const aabb &aabb,
 		uint8_t axis, float split) {
-	renderer::aabb laabb, raabb;
+	core::aabb laabb, raabb;
 	laabb = raabb = aabb;
 
 	// Left node contains objects
@@ -31,7 +31,7 @@ std::tuple<aabb, aabb> split_aabb(
 	return { laabb, raabb };
 }
 
-std::tuple<
+static std::tuple<
 		std::vector<triangle>, std::vector<triangle>,
 		std::vector<uint32_t>, std::vector<uint32_t>
 		> split_triangles(
@@ -76,7 +76,7 @@ std::tuple<
 			lindices, rindices };
 }
 
-kd_tree_node *init_node_median(
+static kd_tree_node *init_node_median(
 		aabb &&aabb,
 		std::vector<triangle> &&triangles,
 		std::vector<uint32_t> &&indices,
@@ -125,7 +125,7 @@ kd_tree_node *init_node_median(
 }
 
 // Alternative to init_node_median
-kd_tree_node *init_node_sah(
+static kd_tree_node *init_node_sah(
 		aabb &&aabb,
 		std::vector<triangle> &&triangles,
 		std::vector<uint32_t> &&indices,
@@ -247,10 +247,14 @@ kd_tree_node *init_node_sah(
 
 }
 
+bool mesh::intersection::has_hit() const {
+	return distance >= 0;
+}
+
 void mesh::recalculate_aabb() {
 	aabb.clear();
 	for (vertex &v : vertices)
-		aabb.add_point(v.position);
+		aabb.add(v.position);
 }
 
 void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
@@ -289,7 +293,7 @@ void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
 
 mesh::intersection mesh::intersect(const ray &ray) const {
 	auto result = aabb.intersect(ray);
-	if (result.far < 0)
+	if (!result.has_hit())
 		return {};
 
 	std::stack<std::tuple<const kd_tree_node *, float, float>> stack;
@@ -350,15 +354,15 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 
 		for (uint32_t i = 0; i < leaf->triangles.size(); i++) {
 			auto hit = leaf->triangles[i].intersect(ray);
-			if (hit.distance >= 0 && hit.distance <= max_dist &&
+			if (hit.has_hit() && hit.distance <= max_dist &&
 					(hit.distance < nearest_hit.distance ||
-					nearest_hit.distance < 0)) {
+					!nearest_hit.has_hit())) {
 				nearest_hit = hit;
 				index = i;
 			}
 		}
 
-		if (nearest_hit.distance < 0)
+		if (!nearest_hit.has_hit())
 			continue;
 
 		return {

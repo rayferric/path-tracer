@@ -1,14 +1,16 @@
 #pragma once
 
 #include "math/vec3.hpp"
-#include "renderer/ray.hpp"
+#include "core/ray.hpp"
 
-namespace renderer {
+namespace core {
 
 struct triangle {
 	struct intersection {
 		float distance = -1;
 		math::fvec3 barycentric;
+
+		bool has_hit() const;
 	};
 
 	math::fvec3 a, b, c;

@@ -1,13 +1,15 @@
 #pragma once
 
 #include "math/vec3.hpp"
-#include "renderer/ray.hpp"
+#include "core/ray.hpp"
 
-namespace renderer {
+namespace core {
 
 struct aabb {
 	struct intersection {
 		float near, far = -1;
+
+		bool has_hit() const;
 	};
 
 	math::fvec3 min, max;
@@ -16,7 +18,9 @@ struct aabb {
 
 	aabb(const math::fvec3 &min, const math::fvec3 &max);
 
-	void add_point(const math::fvec3 &point);
+	void add(const math::fvec3 &point);
+
+	void add(const aabb &aabb);
 
 	void clear();
 
