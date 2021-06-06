@@ -8,14 +8,14 @@ class entity;
 
 class component {
 public:
-	std::shared_ptr<entity> get_parent() const;
+	std::shared_ptr<entity> get_entity() const;
 
 	virtual ~component() {}
 
 private:
 	friend entity;
 
-	std::weak_ptr<entity> parent;
+	std::weak_ptr<entity> entity;
 };
 
 }

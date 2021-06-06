@@ -1,10 +1,10 @@
-#include "core/aabb.hpp"
+#include "geometry/aabb.hpp"
 
 #include "math/math.hpp"
 
 using namespace math;
 
-namespace core {
+namespace geometry {
 
 bool aabb::intersection::has_hit() const {
 	return far >= 0;

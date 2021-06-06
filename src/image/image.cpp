@@ -1,6 +1,8 @@
-#include "texture/image.hpp"
+#include "image/image.hpp"
 
 #include "math/math.hpp"
+
+namespace image {
 
 image::image(math::uvec2 size, uint32_t channel_count, bool hdr, bool srgb) :
 		size(size),
@@ -106,4 +108,4 @@ bool image::is_srgb() const {
 	return srgb;
 }
 
-image::image() {}
+}

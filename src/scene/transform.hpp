@@ -15,16 +15,16 @@ struct transform {
 	math::fmat3 basis;
 
 	transform(const math::fvec3 &origin = math::fvec3(0),
-			  const math::fmat3 &basis = math::fmat3(1));
+			  const math::fmat3 &basis  = math::fmat3(1));
 
 	static transform make(
 			const math::fvec3 &translation = math::fvec3(0),
-			const math::quat &rotation = math::quat(1),
-			const math::fvec3 &scale = math::fvec3(1));
+			const math::quat  &rotation    = math::quat(1),
+			const math::fvec3 &scale       = math::fvec3(1));
 
 	static math::fmat3 make_basis(
-			const math::quat &rotation = math::quat(1),
-			const math::fvec3 &scale = math::fvec3(1));
+			const math::quat  &rotation = math::quat(1),
+			const math::fvec3 &scale    = math::fvec3(1));
 
 	transform inverse() const;
 

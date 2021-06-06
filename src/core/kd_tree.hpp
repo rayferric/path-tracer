@@ -2,9 +2,9 @@
 
 #include "pch.hpp"
 
-#include "core/aabb.hpp"
-#include "core/ray.hpp"
-#include "core/triangle.hpp"
+#include "geometry/aabb.hpp"
+#include "geometry/ray.hpp"
+#include "geometry/triangle.hpp"
 
 namespace core {
 
@@ -25,7 +25,7 @@ public:
 
 class kd_tree_leaf : public kd_tree_node {
 public:
-	std::vector<triangle> triangles;
+	std::vector<geometry::triangle> triangles;
 	std::vector<uint32_t> indices;
 };
 

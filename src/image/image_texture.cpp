@@ -1,8 +1,10 @@
-#include "texture/image_texture.hpp"
+#include "image/image_texture.hpp"
 
 #include "math/math.hpp"
 
 using namespace math;
+
+namespace image {
 
 image_texture::image_texture(const std::shared_ptr<image> &img)
 		: img(img) {}
@@ -48,4 +50,6 @@ fvec4 image_texture::read_pixel(const uvec2 &pixel) const {
 	}
 
 	return color;
+}
+
 }

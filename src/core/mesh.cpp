@@ -20,7 +20,7 @@ static kd_tree_node *init_leaf(
 static std::tuple<aabb, aabb> split_aabb(
 		const aabb &aabb,
 		uint8_t axis, float split) {
-	core::aabb laabb, raabb;
+	geometry::aabb laabb, raabb;
 	laabb = raabb = aabb;
 
 	// Left node contains objects

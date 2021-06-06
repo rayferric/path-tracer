@@ -2,9 +2,10 @@
 
 #include "pch.hpp"
 
-#include "core/aabb.hpp"
 #include "core/material.hpp"
 #include "core/mesh.hpp"
+#include "geometry/aabb.hpp"
+#include "geometry/ray.hpp"
 #include "scene/component.hpp"
 #include "scene/transform.hpp"
 
@@ -19,21 +20,20 @@ public:
 
 	struct intersection {
 		float distance = -1;
-		fvec3 position;
-		fvec2 tex_coord;
-		fvec3 normal;
-		fvec3 tangent;
-		std::shared_ptr<core::material> material;
+		transform transform;
+		const surface *surface;
+		uint32_t triangle_index;
+		math::fvec3 barycentric;
 
 		bool has_hit() const;
 	};
 
 	std::vector<surface> surfaces;
-	core::aabb aabb;
+	geometry::aabb aabb;
 
 	void recalculate_aabb();
 
-	intersection intersect(const ray &ray) const;
+	intersection intersect(const geometry::ray &ray) const;
 };
 
 }

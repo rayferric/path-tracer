@@ -1,11 +1,10 @@
 #include "pch.hpp"
 
 #include "math/mat3.hpp"
-#include "scene/model.hpp"
-#include "core/triangle.hpp"
+#include "geometry/triangle.hpp"
+#include "image/image_texture.hpp"
 #include "scene/entity.hpp"
-#include "texture/image_texture.hpp"
-#include "scene/load_gltf.hpp"
+#include "scene/model.hpp"
 
 using namespace math;
 using namespace core;
@@ -23,7 +22,7 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 	if (auto model = entity->get_component<scene::model>()) {
 		transform transform = entity->get_global_transform().inverse();
 
-		core::ray view_ray(
+		geometry::ray view_ray(
 			transform * ray.origin,
 			transform.basis * ray.get_dir()
 		);
@@ -52,8 +51,9 @@ void trace_entity(trace_state &state, const std::shared_ptr<entity> &entity, con
 		}
 	}
 
-	for (const auto &child : entity->get_children())
+	for (const auto &child : entity->get_children()) {
 		trace_entity(state, child, ray);
+	}
 }
 
 fvec3 tonemap_approx_aces(const fvec3 &hdr) {
@@ -87,7 +87,7 @@ fvec3 trace(const std::shared_ptr<entity> &entity, const ray &ray) {
 
 		// color = normal;
 
-		core::ray light_ray(
+		geometry::ray light_ray(
 			pos + light_dir * math::epsilon * 3,
 			light_dir
 		);

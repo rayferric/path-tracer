@@ -4,6 +4,8 @@
 
 #include "math/vec2.hpp"
 
+namespace image {
+
 class image {
 public:
 	image(math::uvec2 size, uint32_t channel_count, bool hdr, bool srgb);
@@ -30,5 +32,7 @@ private:
 	bool hdr, srgb;
 	std::vector<uint8_t> data;
 
-	image();
+	image() {}
 };
+
+}

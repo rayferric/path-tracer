@@ -1,9 +1,9 @@
 #pragma once
 
 #include "math/vec3.hpp"
-#include "core/ray.hpp"
+#include "geometry/ray.hpp"
 
-namespace core {
+namespace geometry {
 
 struct aabb {
 	struct intersection {

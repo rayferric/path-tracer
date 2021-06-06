@@ -6,7 +6,7 @@
 #include "math/vec3.hpp"
 #include "core/kd_tree.hpp"
 #include "core/material.hpp"
-#include "core/ray.hpp"
+#include "geometry/ray.hpp"
 #include "core/vertex.hpp"
 
 namespace core {
@@ -22,7 +22,7 @@ struct mesh {
 
 	std::vector<vertex> vertices;
 	std::vector<math::uvec3> triangles;
-	core::aabb aabb;
+	geometry::aabb aabb;
 	std::shared_ptr<kd_tree_node> kd_tree = nullptr;
 	std::shared_ptr<core::material> material = nullptr;
 

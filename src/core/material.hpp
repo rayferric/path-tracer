@@ -2,8 +2,8 @@
 
 #include "pch.hpp"
 
+#include "image/texture.hpp"
 #include "math/vec3.hpp"
-#include "texture/texture.hpp"
 
 namespace core {
 

@@ -2,10 +2,12 @@
 
 #include "pch.hpp"
 
+#include "image/image.hpp"
+#include "image/texture.hpp"
 #include "math/vec2.hpp"
 #include "math/vec4.hpp"
-#include "texture/image.hpp"
-#include "texture/texture.hpp"
+
+namespace image {
 
 class image_texture : public texture {
 public:
@@ -18,3 +20,5 @@ private:
 
 	math::fvec4 read_pixel(const math::uvec2 &pixel) const;
 };
+
+}

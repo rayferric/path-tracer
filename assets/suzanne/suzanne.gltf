@@ -43,15 +43,15 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 9765,
             "max" : [
-                1.325934886932373,
+                1.328185796737671,
                 0.9392361640930176,
-                0.8223199844360352
+                0.8224414587020874
             ],
             "min" : [
-                -1.325934886932373,
-                -0.9704862236976624,
+                -1.328185796737671,
+                -0.971822202205658,
                 -0.7782661318778992
             ],
             "type" : "VEC3"
@@ -59,47 +59,47 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 9765,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 7872,
+            "count" : 9765,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 11808,
+            "count" : 47232,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 94464,
+            "byteLength" : 117180,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
+            "byteLength" : 117180,
+            "byteOffset" : 117180
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 78120,
+            "byteOffset" : 234360
+        },
+        {
+            "buffer" : 0,
             "byteLength" : 94464,
-            "byteOffset" : 94464
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 62976,
-            "byteOffset" : 188928
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 23616,
-            "byteOffset" : 251904
+            "byteOffset" : 312480
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 275520,
+            "byteLength" : 406944,
             "uri" : "suzanne.bin"
         }
     ]

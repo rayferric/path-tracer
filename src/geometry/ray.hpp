@@ -1,8 +1,9 @@
 #pragma once
 
 #include "math/vec3.hpp"
+#include "scene/transform.hpp"
 
-namespace core {
+namespace geometry {
 
 class ray {
 public:
@@ -10,11 +11,11 @@ public:
 
 	ray(const math::fvec3 &origin, const math::fvec3 &dir);
 
+	ray transform(const scene::transform &transform) const;
+
 	math::fvec3 get_dir() const;
 
 	void set_dir(const math::fvec3 &dir);
-
-	ray transform(const transform &transform)
 
 private:
 	math::fvec3 dir;

@@ -1,10 +1,10 @@
-#include "core/triangle.hpp"
+#include "geometry/triangle.hpp"
 
 #include "math/mat3.hpp"
 
 using namespace math;
 
-namespace core {
+namespace geometry {
 
 bool triangle::intersection::has_hit() const {
 	return distance >= 0;
