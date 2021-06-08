@@ -15,7 +15,7 @@ std::shared_ptr<T> entity::add_component() {
 		return nullptr;
 
 	auto component = std::make_shared<T>();
-	component->entity = shared_from_this();
+	component->parent_entity = shared_from_this();
 	
 	component_index.emplace(typeid(T), components.size());
 	components.push_back(component);
@@ -34,7 +34,7 @@ std::shared_ptr<T> entity::remove_component() {
 	components.erase(it);
 	component_index.erase(typeid(T));
 
-	component->entity = nullptr;
+	component->parent_entity = nullptr;
 	return std::static_pointer_cast<T>(component);
 }
 

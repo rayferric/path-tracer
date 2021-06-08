@@ -13,9 +13,9 @@ public:
 	virtual ~component() {}
 
 private:
-	friend entity;
+	friend scene::entity;
 
-	std::weak_ptr<entity> entity;
+	std::weak_ptr<scene::entity> parent_entity;
 };
 
 }

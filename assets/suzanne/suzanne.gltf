@@ -8,20 +8,54 @@
         {
             "name" : "Scene",
             "nodes" : [
-                0
+                0,
+                2
             ]
         }
     ],
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "Suzanne",
+            "name" : "Suzanne"
+        },
+        {
+            "camera" : 0,
+            "name" : "Camera_Orientation",
             "rotation" : [
-                0.25,
-                0.25,
-                0.0669873058795929,
-                0.9330127239227295
+                -0.7071067690849304,
+                0,
+                0,
+                0.7071067690849304
             ]
+        },
+        {
+            "children" : [
+                1
+            ],
+            "name" : "Camera",
+            "rotation" : [
+                -0.06788654625415802,
+                -0.9211907386779785,
+                0.3343966603279114,
+                -0.18702374398708344
+            ],
+            "translation" : [
+                1.1293278932571411,
+                3.5752358436584473,
+                -2.6400558948516846
+            ]
+        }
+    ],
+    "cameras" : [
+        {
+            "name" : "Camera.001",
+            "perspective" : {
+                "aspectRatio" : 1,
+                "yfov" : 0.8726646304130554,
+                "zfar" : 1000,
+                "znear" : 0.10000000149011612
+            },
+            "type" : "perspective"
         }
     ],
     "meshes" : [
@@ -43,14 +77,14 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 9765,
+            "count" : 35258,
             "max" : [
-                1.328185796737671,
+                1.3287925720214844,
                 0.9392361640930176,
-                0.8224414587020874
+                0.8226352334022522
             ],
             "min" : [
-                -1.328185796737671,
+                -1.328792691230774,
                 -0.971822202205658,
                 -0.7782661318778992
             ],
@@ -59,47 +93,47 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 9765,
+            "count" : 35258,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 9765,
+            "count" : 35258,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 47232,
+            "count" : 188928,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 117180,
+            "byteLength" : 423096,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 117180,
-            "byteOffset" : 117180
+            "byteLength" : 423096,
+            "byteOffset" : 423096
         },
         {
             "buffer" : 0,
-            "byteLength" : 78120,
-            "byteOffset" : 234360
+            "byteLength" : 282064,
+            "byteOffset" : 846192
         },
         {
             "buffer" : 0,
-            "byteLength" : 94464,
-            "byteOffset" : 312480
+            "byteLength" : 377856,
+            "byteOffset" : 1128256
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 406944,
+            "byteLength" : 1506112,
             "uri" : "suzanne.bin"
         }
     ]

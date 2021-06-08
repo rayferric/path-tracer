@@ -20,8 +20,8 @@ public:
 
 	struct intersection {
 		float distance = -1;
-		transform transform;
-		const surface *surface;
+		scene::transform transform;
+		const model::surface *surface;
 		uint32_t triangle_index;
 		math::fvec3 barycentric;
 

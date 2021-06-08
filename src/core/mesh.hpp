@@ -2,12 +2,12 @@
 
 #include "pch.hpp"
 
-#include "math/vec2.hpp"
-#include "math/vec3.hpp"
 #include "core/kd_tree.hpp"
 #include "core/material.hpp"
-#include "geometry/ray.hpp"
 #include "core/vertex.hpp"
+#include "geometry/ray.hpp"
+#include "math/vec2.hpp"
+#include "math/vec3.hpp"
 
 namespace core {
 
@@ -34,7 +34,7 @@ struct mesh {
 
 	void build_kd_tree(bool use_sah = true, uint8_t max_depth = 25);
 
-	intersection intersect(const ray &ray) const;
+	intersection intersect(const geometry::ray &ray) const;
 };
 
 }

@@ -42,6 +42,8 @@ struct transform {
 
 	friend std::ostream &operator<<(std::ostream &lhs, const transform &rhs);
 
+	transform &operator*=(const transform &rhs);
+
 	transform operator*(const transform &rhs) const;
 
 	math::fvec3 operator*(const math::fvec3 &rhs) const;

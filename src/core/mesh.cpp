@@ -1,5 +1,8 @@
 #include "core/mesh.hpp"
 
+#include "geometry/triangle.hpp"
+
+using namespace geometry;
 using namespace math;
 
 namespace core {

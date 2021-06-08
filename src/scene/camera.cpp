@@ -8,9 +8,8 @@ using namespace math;
 
 namespace scene {
 
-ray camera::get_ray(const fvec2 &screen_pos, float ratio) const {
-	fvec2 ndc = screen_pos * 2 - fvec2::one;
-	fvec2 dir = fov_tan * ndc;
+ray camera::get_ray(const fvec2 &ndc, float ratio) const {
+	fvec2 dir = tan_half_fov * ndc;
 	dir.x *= ratio;
 
 	// Constructor normalizes direction
@@ -29,7 +28,7 @@ float camera::get_fov() const {
 
 void camera::set_fov(float fov) {
 	this->fov = fov;
-	this->fov_tan = math::tan(fov);
+	this->tan_half_fov = math::tan(fov * 0.5F);
 }
 
 }

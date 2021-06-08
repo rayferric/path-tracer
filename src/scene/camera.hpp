@@ -8,7 +8,7 @@ namespace scene {
 
 class camera : public component {
 public:
-	geometry::ray get_ray(math::fvec2 screen_pos, float ratio) const;
+	geometry::ray get_ray(const math::fvec2 &ndc, float ratio) const;
 
 	float get_fov() const;
 
@@ -16,7 +16,7 @@ public:
 
 private:
 	float fov; // FOV is vertical
-	float fov_tan;
+	float tan_half_fov;
 };
 
 }

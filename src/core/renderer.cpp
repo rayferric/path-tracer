@@ -7,6 +7,7 @@
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat3.hpp"
+#include "math/math.hpp"
 #include "scene/camera.hpp"
 #include "scene/entity.hpp"
 #include "scene/model.hpp"
@@ -31,6 +32,86 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 	if(!ai_scene || (ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) > 0
 			|| !ai_scene->mRootNode)
         throw std::runtime_error(importer.GetErrorString());
+
+	// Create materials
+
+	std::vector<std::shared_ptr<material>> materials;
+	materials.reserve(ai_scene->mNumMaterials);
+
+	for(int i = 0; i < ai_scene->mNumMaterials; i++) {
+		aiMaterial *ai_material = ai_scene->mMaterials[i];
+		
+		auto material = std::make_shared<core::material>();
+
+		int tmp;
+
+		ai_material->Get(AI_MATKEY_TWOSIDED, tmp);
+		if(tmp != 0) material->culling = false;
+		ai_material->Get(AI_MATKEY_GLTF_UNLIT, tmp);
+		if(tmp != 0) material.unlit = true;
+
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buf = stack.mallocFloat(1);
+            IntBuffer max = stack.mallocInt(1).put(1).flip();
+            aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, aiTextureType_NONE, 0, buf, max);
+            material.setMetallic(buf.get(0));
+            aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, aiTextureType_NONE, 0, buf, max);
+            material.setRoughness(buf.get(0));
+        }
+
+        AIColor4D aiColor = AIColor4D.create();
+        aiGetMaterialColor(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, aiTextureType_NONE, 0, aiColor);
+        material.setColor(new Vector4f(aiColor.r(), aiColor.g(), aiColor.b(), aiColor.a()));
+
+        if(aiColor.a() < 1) {
+            material.setTranslucent(true);
+            material.setCulling(false);
+        }
+
+        aiColor.clear();
+        aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, aiTextureType_NONE, 0, aiColor);
+        material.setEmissive(new Vector3f(aiColor.r(), aiColor.g(), aiColor.b()));
+
+        AIString aiString = AIString.create();
+
+        aiGetMaterialString(aiMaterial, aiAI_MATKEY_GLTF_ALPHAMODE, aiTextureType_NONE, 0, aiString);
+        if(aiString.dataString().equals("BLEND")) {
+            material.setTranslucent(true);
+            material.setCulling(false);
+        }
+
+        aiString.clear();
+        Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+        String fileName = aiString.dataString();
+        if(!fileName.isEmpty())
+            material.setColorMap(getCachedTexture(sceneDir + fileName));
+
+        aiString.clear();
+        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+        fileName = aiString.dataString();
+        if(!fileName.isEmpty())
+            material.setNormalMap(getCachedTexture(sceneDir + fileName));
+
+        aiString.clear();
+        Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+        fileName = aiString.dataString();
+        if(!fileName.isEmpty())
+            material.setMetallicRoughnessMap(getCachedTexture(sceneDir + fileName));
+
+        aiString.clear();
+        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+        fileName = aiString.dataString();
+        if(!fileName.isEmpty())
+            material.setOcclusionMap(getCachedTexture(sceneDir + fileName));
+
+        aiString.clear();
+        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_EMISSIVE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+        fileName = aiString.dataString();
+        if(!fileName.isEmpty())
+            material.setEmissiveMap(getCachedTexture(sceneDir + fileName));
+
+        return material;
+	}
 
 	// Create surfaces
 
@@ -74,8 +155,6 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 	if (ai_scene->mNumCameras == 0)
 		throw std::runtime_error("Scene is missing a camera.");
-	std::unordered_map<std::string, aiCamera *> cameras;
-
 	aiCamera *ai_camera = ai_scene->mCameras[0];
 
 	// Instantiate nodes
@@ -112,6 +191,8 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 			for (uint32_t i = 0; i < ai_node->mNumMeshes; i++)
 				model->surfaces.push_back(surfaces[ai_mesh_indices[i]]);
+
+			model->recalculate_aabb();
 		}
 
 		if (entity->get_name() == ai_camera->mName.C_Str()) {
@@ -121,9 +202,13 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 			// Choose as the active one
 			this->camera = camera;
 
-			//Map horizontal FOV to vertical
-			camera->set_fov(ai_camera->mHorizontalFOV /
-					ai_camera->mAspect);
+			// Assimp does some illogical
+			// maths behind the curtain...
+			// Normally we would scale
+			// half-angle tangents instead
+			float vfov = ai_camera->mHorizontalFOV
+					/ ai_camera->mAspect;
+			camera->set_fov(vfov);
 		}
 
 		// Instantiate children
@@ -142,6 +227,8 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 			root = std::move(entity);
 	}
 
+	if (!camera)
+		throw std::runtime_error("Scene is missing a camera.");
 }
 
 void renderer::render(const std::filesystem::path &path) const {
@@ -149,16 +236,15 @@ void renderer::render(const std::filesystem::path &path) const {
 	
 	for (uint32_t x = 0; x < resolution.x; x++) {
 		for (uint32_t y = 0; y < resolution.y; y++) {
-			fvec2 screen_pos = (fvec2(x, y) / resolution) * 2 - fvec2(1);
-			screen_pos.y = -screen_pos.y;
+			if (y == 0)
+				std::cout << "Drawing column #" << x << std::endl;
+
+			fvec2 ndc = (fvec2(x, y) / resolution) * 2 - fvec2::one;
+			ndc.y = -ndc.y;
 			float ratio = static_cast<float>(resolution.x) / resolution.y;
 
-			ray ray = camera->get_ray(screen_pos, ratio);
-
-			if (y == 0)
-				std::cout << "Drawing row: " << x << std::endl;
-
-			fvec3 color = integrate(root, ray);
+			ray ray = camera->get_ray(ndc, ratio);
+			fvec3 color = integrate(ray);
 
 			img->write(uvec2(x, y), 0, color.x);
 			img->write(uvec2(x, y), 1, color.y);
@@ -167,6 +253,26 @@ void renderer::render(const std::filesystem::path &path) const {
 	}
 
 	img->save(path);
+}
+
+fvec3 renderer::integrate(const ray &ray) const {
+	auto camera_result = trace(ray);
+
+	if (!camera_result.hit)
+		return fvec3::zero;
+	else {
+		geometry::ray shadow_ray(
+			camera_result.position + fvec3(1 / math::sqrt3) * math::epsilon,
+			fvec3(1 / math::sqrt3)
+		);
+
+		auto shadow_result = trace(shadow_ray);
+
+		if (shadow_result.hit)
+			return fvec3(0.1F);
+		else
+			return max(dot(camera_result.normal, fvec3(1 / math::sqrt3)), 0.1F);
+	}
 }
 
 renderer::trace_result renderer::trace(const ray &ray) const {
@@ -179,17 +285,20 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 		entity *entity = stack.top();
 		stack.pop();
 
+		for (const auto &child : entity->get_children())
+			stack.push(child.get());
+
 		if (auto model = entity->get_component<scene::model>()) {
 			auto hit = model->intersect(ray);
+
+			if (!hit.has_hit())
+				continue;
 
 			if (hit.distance < nearest_hit.distance
 					|| !nearest_hit.has_hit()) {
 				nearest_hit = hit;
 			}
 		}
-
-		for (const auto &child : entity->get_children())
-			stack.push(child.get());
 	}
 
 	if (!nearest_hit.has_hit())
@@ -203,7 +312,7 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 	auto &v2 = mesh->vertices[indices.y];
 	auto &v3 = mesh->vertices[indices.z];
 
-	transform &transform = nearest_hit.transform;
+	transform transform = nearest_hit.transform;
 	fmat3 normal_matrix = transpose(inverse(nearest_hit.transform.basis));
 
 	fvec3 position = transform * (
@@ -231,15 +340,6 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 		tangent,
 		material
 	};
-}
-
-fvec3 renderer::integrate(const ray &ray) const {
-	auto result = trace(ray);
-
-	if (!result.hit)
-		return fvec3::zero;
-	else
-		return 
 }
 
 }

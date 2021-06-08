@@ -17,7 +17,7 @@ struct material {
 	float metallic_mul;
 	math::fvec3 emissive_mul;
 
-	std::shared_ptr<texture>
+	std::shared_ptr<image::texture>
 			albedo_map    = nullptr,
 			opacity_map   = nullptr,
 			normal_map    = nullptr,

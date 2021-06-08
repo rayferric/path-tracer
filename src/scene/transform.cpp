@@ -103,6 +103,10 @@ std::ostream &operator<<(std::ostream &lhs, const transform &rhs) {
 	return lhs << final_ss.str();
 }
 
+transform &transform::operator*=(const transform &rhs) {
+	return *this = *this * rhs;
+}
+
 transform transform::operator*(const transform &rhs) const {
 	fvec3 origin = this->basis * rhs.origin + this->origin;
 	fmat3 basis  = this->basis * rhs.basis;
