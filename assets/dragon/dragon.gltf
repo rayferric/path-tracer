@@ -8,7 +8,8 @@
         {
             "name" : "Scene",
             "nodes" : [
-                0
+                0,
+                2
             ]
         }
     ],
@@ -16,17 +17,50 @@
         {
             "mesh" : 0,
             "name" : "dragon_vrip",
-            "rotation" : [
-                0.25,
-                0.25,
-                0.0669873058795929,
-                0.9330127239227295
-            ],
             "translation" : [
                 0.12243225425481796,
                 -0.5392895340919495,
                 0
             ]
+        },
+        {
+            "camera" : 0,
+            "name" : "Camera_Orientation",
+            "rotation" : [
+                -0.7071067690849304,
+                0,
+                0,
+                0.7071067690849304
+            ]
+        },
+        {
+            "children" : [
+                1
+            ],
+            "name" : "Camera",
+            "rotation" : [
+                0.5252557992935181,
+                -0.18281866610050201,
+                0.11669106781482697,
+                0.8228407502174377
+            ],
+            "translation" : [
+                -1.4709463119506836,
+                1.8152508735656738,
+                2.7803375720977783
+            ]
+        }
+    ],
+    "cameras" : [
+        {
+            "name" : "Camera.002",
+            "perspective" : {
+                "aspectRatio" : 1,
+                "yfov" : 0.6911112070083618,
+                "zfar" : 1000,
+                "znear" : 0.10000000149011612
+            },
+            "type" : "perspective"
         }
     ],
     "materials" : [
@@ -65,7 +99,7 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 518925,
+            "count" : 521102,
             "max" : [
                 1.1648892164230347,
                 1.7329264879226685,
@@ -81,13 +115,13 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 518925,
+            "count" : 521102,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 518925,
+            "count" : 521102,
             "type" : "VEC2"
         },
         {
@@ -100,28 +134,28 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 6227100,
+            "byteLength" : 6253224,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 6227100,
-            "byteOffset" : 6227100
+            "byteLength" : 6253224,
+            "byteOffset" : 6253224
         },
         {
             "buffer" : 0,
-            "byteLength" : 4151400,
-            "byteOffset" : 12454200
+            "byteLength" : 4168816,
+            "byteOffset" : 12506448
         },
         {
             "buffer" : 0,
             "byteLength" : 10456968,
-            "byteOffset" : 16605600
+            "byteOffset" : 16675264
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 27062568,
+            "byteLength" : 27132232,
             "uri" : "dragon.bin"
         }
     ]

@@ -104,27 +104,27 @@ vec2<bool> vec2<T>::operator>(const vec2<U> &rhs) const {
 // Vector + Vector
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator+(const vec2<U> &rhs) const {
-	return vec2(x + rhs.x, y + rhs.y);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator+(const vec2<U> &rhs) const {
+	return vec2<Ret>(x + rhs.x, y + rhs.y);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator-(const vec2<U> &rhs) const {
-	return vec2(x - rhs.x, y - rhs.y);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator-(const vec2<U> &rhs) const {
+	return vec2<Ret>(x - rhs.x, y - rhs.y);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator*(const vec2<U> &rhs) const {
-	return vec2(x * rhs.x, y * rhs.y);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator*(const vec2<U> &rhs) const {
+	return vec2<Ret>(x * rhs.x, y * rhs.y);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator/(const vec2<U> &rhs) const {
-	return vec2(x / rhs.x, y / rhs.y);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator/(const vec2<U> &rhs) const {
+	return vec2<Ret>(x / rhs.x, y / rhs.y);
 }
 
 template<scalar T>
@@ -154,15 +154,15 @@ vec2<T> &vec2<T>::operator/=(const vec2<U> &rhs) {
 // Vector + Scalar
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator*(U rhs) const {
-	return vec2(x * rhs, y * rhs);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator*(U rhs) const {
+	return vec2<Ret>(x * rhs, y * rhs);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec2<T>::operator/(U rhs) const {
-	return vec2(x / rhs, y / rhs);
+template<scalar U, scalar Ret>
+vec2<Ret> vec2<T>::operator/(U rhs) const {
+	return vec2<Ret>(x / rhs, y / rhs);
 }
 
 template<scalar T>

@@ -35,83 +35,83 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 	// Create materials
 
-	std::vector<std::shared_ptr<material>> materials;
-	materials.reserve(ai_scene->mNumMaterials);
+	// std::vector<std::shared_ptr<material>> materials;
+	// materials.reserve(ai_scene->mNumMaterials);
 
-	for(int i = 0; i < ai_scene->mNumMaterials; i++) {
-		aiMaterial *ai_material = ai_scene->mMaterials[i];
+	// for(int i = 0; i < ai_scene->mNumMaterials; i++) {
+	// 	aiMaterial *ai_material = ai_scene->mMaterials[i];
 		
-		auto material = std::make_shared<core::material>();
+	// 	auto material = std::make_shared<core::material>();
 
-		int tmp;
+	// 	int tmp;
 
-		ai_material->Get(AI_MATKEY_TWOSIDED, tmp);
-		if(tmp != 0) material->culling = false;
-		ai_material->Get(AI_MATKEY_GLTF_UNLIT, tmp);
-		if(tmp != 0) material.unlit = true;
+	// 	ai_material->Get(AI_MATKEY_TWOSIDED, tmp);
+	// 	if(tmp != 0) material->culling = false;
+	// 	ai_material->Get(AI_MATKEY_GLTF_UNLIT, tmp);
+	// 	if(tmp != 0) material.unlit = true;
 
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer buf = stack.mallocFloat(1);
-            IntBuffer max = stack.mallocInt(1).put(1).flip();
-            aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, aiTextureType_NONE, 0, buf, max);
-            material.setMetallic(buf.get(0));
-            aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, aiTextureType_NONE, 0, buf, max);
-            material.setRoughness(buf.get(0));
-        }
+    //     try(MemoryStack stack = MemoryStack.stackPush()) {
+    //         FloatBuffer buf = stack.mallocFloat(1);
+    //         IntBuffer max = stack.mallocInt(1).put(1).flip();
+    //         aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, aiTextureType_NONE, 0, buf, max);
+    //         material.setMetallic(buf.get(0));
+    //         aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, aiTextureType_NONE, 0, buf, max);
+    //         material.setRoughness(buf.get(0));
+    //     }
 
-        AIColor4D aiColor = AIColor4D.create();
-        aiGetMaterialColor(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, aiTextureType_NONE, 0, aiColor);
-        material.setColor(new Vector4f(aiColor.r(), aiColor.g(), aiColor.b(), aiColor.a()));
+    //     AIColor4D aiColor = AIColor4D.create();
+    //     aiGetMaterialColor(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, aiTextureType_NONE, 0, aiColor);
+    //     material.setColor(new Vector4f(aiColor.r(), aiColor.g(), aiColor.b(), aiColor.a()));
 
-        if(aiColor.a() < 1) {
-            material.setTranslucent(true);
-            material.setCulling(false);
-        }
+    //     if(aiColor.a() < 1) {
+    //         material.setTranslucent(true);
+    //         material.setCulling(false);
+    //     }
 
-        aiColor.clear();
-        aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, aiTextureType_NONE, 0, aiColor);
-        material.setEmissive(new Vector3f(aiColor.r(), aiColor.g(), aiColor.b()));
+    //     aiColor.clear();
+    //     aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, aiTextureType_NONE, 0, aiColor);
+    //     material.setEmissive(new Vector3f(aiColor.r(), aiColor.g(), aiColor.b()));
 
-        AIString aiString = AIString.create();
+    //     AIString aiString = AIString.create();
 
-        aiGetMaterialString(aiMaterial, aiAI_MATKEY_GLTF_ALPHAMODE, aiTextureType_NONE, 0, aiString);
-        if(aiString.dataString().equals("BLEND")) {
-            material.setTranslucent(true);
-            material.setCulling(false);
-        }
+    //     aiGetMaterialString(aiMaterial, aiAI_MATKEY_GLTF_ALPHAMODE, aiTextureType_NONE, 0, aiString);
+    //     if(aiString.dataString().equals("BLEND")) {
+    //         material.setTranslucent(true);
+    //         material.setCulling(false);
+    //     }
 
-        aiString.clear();
-        Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-        String fileName = aiString.dataString();
-        if(!fileName.isEmpty())
-            material.setColorMap(getCachedTexture(sceneDir + fileName));
+    //     aiString.clear();
+    //     Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+    //     String fileName = aiString.dataString();
+    //     if(!fileName.isEmpty())
+    //         material.setColorMap(getCachedTexture(sceneDir + fileName));
 
-        aiString.clear();
-        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-        fileName = aiString.dataString();
-        if(!fileName.isEmpty())
-            material.setNormalMap(getCachedTexture(sceneDir + fileName));
+    //     aiString.clear();
+    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+    //     fileName = aiString.dataString();
+    //     if(!fileName.isEmpty())
+    //         material.setNormalMap(getCachedTexture(sceneDir + fileName));
 
-        aiString.clear();
-        Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-        fileName = aiString.dataString();
-        if(!fileName.isEmpty())
-            material.setMetallicRoughnessMap(getCachedTexture(sceneDir + fileName));
+    //     aiString.clear();
+    //     Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+    //     fileName = aiString.dataString();
+    //     if(!fileName.isEmpty())
+    //         material.setMetallicRoughnessMap(getCachedTexture(sceneDir + fileName));
 
-        aiString.clear();
-        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-        fileName = aiString.dataString();
-        if(!fileName.isEmpty())
-            material.setOcclusionMap(getCachedTexture(sceneDir + fileName));
+    //     aiString.clear();
+    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+    //     fileName = aiString.dataString();
+    //     if(!fileName.isEmpty())
+    //         material.setOcclusionMap(getCachedTexture(sceneDir + fileName));
 
-        aiString.clear();
-        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_EMISSIVE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-        fileName = aiString.dataString();
-        if(!fileName.isEmpty())
-            material.setEmissiveMap(getCachedTexture(sceneDir + fileName));
+    //     aiString.clear();
+    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_EMISSIVE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
+    //     fileName = aiString.dataString();
+    //     if(!fileName.isEmpty())
+    //         material.setEmissiveMap(getCachedTexture(sceneDir + fileName));
 
-        return material;
-	}
+    //     return material;
+	// }
 
 	// Create surfaces
 
@@ -234,23 +234,38 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 void renderer::render(const std::filesystem::path &path) const {
 	auto img = std::make_shared<image::image>(resolution, 3, false, true);
 	
-	for (uint32_t x = 0; x < resolution.x; x++) {
-		for (uint32_t y = 0; y < resolution.y; y++) {
-			if (y == 0)
-				std::cout << "Drawing column #" << x << std::endl;
+	// for (uint32_t x = 0; x < resolution.x; x++) {
+	// 	for (uint32_t y = 0; y < resolution.y; y++) {
+	// 		if (y == 0)
+	// 			std::cout << "Drawing column #" << x << std::endl;
 
-			fvec2 ndc = (fvec2(x, y) / resolution) * 2 - fvec2::one;
-			ndc.y = -ndc.y;
-			float ratio = static_cast<float>(resolution.x) / resolution.y;
+	// 		fvec2 ndc = (fvec2(x, y) / resolution) * 2 - fvec2::one;
+	// 		ndc.y = -ndc.y;
+	// 		float ratio = static_cast<float>(resolution.x) / resolution.y;
 
-			ray ray = camera->get_ray(ndc, ratio);
-			fvec3 color = integrate(ray);
+	// 		ray ray = camera->get_ray(ndc, ratio);
+	// 		fvec3 color = integrate(ray);
 
-			img->write(uvec2(x, y), 0, color.x);
-			img->write(uvec2(x, y), 1, color.y);
-			img->write(uvec2(x, y), 2, color.z);
-		}
-	}
+	// 		img->write(uvec2(x, y), 0, color.x);
+	// 		img->write(uvec2(x, y), 1, color.y);
+	// 		img->write(uvec2(x, y), 2, color.z);
+	// 	}
+	// }
+
+	std::cout << "Integrating..." << std::endl;
+
+	img->parallel_for_each([&img, this](uvec2 pixel) {
+		fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
+		ndc.y = -ndc.y;
+		float ratio = static_cast<float>(resolution.x) / resolution.y;
+
+		ray ray = camera->get_ray(ndc, ratio);
+		fvec3 color = integrate(ray);
+
+		img->write(pixel, 0, color.x);
+		img->write(pixel, 1, color.y);
+		img->write(pixel, 2, color.z);
+	});
 
 	img->save(path);
 }

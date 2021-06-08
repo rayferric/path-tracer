@@ -8,7 +8,8 @@
 
 namespace scene {
 
-struct transform {
+class transform {
+public:
 	static const transform identity;
 
 	math::fvec3 origin;

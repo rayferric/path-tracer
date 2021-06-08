@@ -2,9 +2,11 @@
 
 #include "math/math.hpp"
 
+using namespace math;
+
 namespace image {
 
-image::image(math::uvec2 size, uint32_t channel_count, bool hdr, bool srgb) :
+image::image(uvec2 size, uint32_t channel_count, bool hdr, bool srgb) :
 		size(size),
 		channel_count(channel_count),
 		hdr(hdr), srgb(srgb) {
@@ -66,7 +68,7 @@ void image::save(const std::filesystem::path &path) const {
 		throw std::invalid_argument("Unknown file extension.");
 }
 
-float image::read(const math::uvec2 &pos, uint32_t channel) const {
+float image::read(const uvec2 &pos, uint32_t channel) const {
 	uint32_t index = pos.y * size.x + pos.x;
 	index = index * channel_count + channel;
 	
@@ -80,7 +82,7 @@ float image::read(const math::uvec2 &pos, uint32_t channel) const {
 	return math::pow(value, srgb ? 2.2F : 1.0F);
 }
 
-void image::write(const math::uvec2 &pos, uint32_t channel, float value) {
+void image::write(const uvec2 &pos, uint32_t channel, float value) {
 	value = math::pow(value, srgb ? (1 / 2.2F) : 1.0F);
 	
 	uint32_t index = pos.y * size.x + pos.x;
@@ -90,6 +92,20 @@ void image::write(const math::uvec2 &pos, uint32_t channel, float value) {
 		std::memcpy(data.data() + (index * 4), &value, 4);
 	else
 		data[index] = static_cast<uint8_t>(value * 255 + 0.5F);
+}
+
+void image::parallel_for_each(const std::function<void(uvec2 &&pixel)> &lambda) {
+	auto end = data.begin() + (data.size() / channel_count);
+	std::atomic_size_t index = 0;
+
+	std::for_each(std::execution::par_unseq, data.begin(),
+			end, [this, lambda, &index](auto &) {
+		size_t i = index++;
+		lambda(uvec2(
+			i % size.x,
+			i / size.x
+		));
+	});
 }
 
 const math::uvec2 &image::get_size() const {

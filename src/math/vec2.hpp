@@ -60,17 +60,17 @@ struct vec2 {
 
 	// Vector + Vector
 
-	template<scalar U>
-	auto operator+(const vec2<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator+(const vec2<U> &rhs) const;
 
-	template<scalar U>
-	auto operator-(const vec2<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator-(const vec2<U> &rhs) const;
 
-	template<scalar U>
-	auto operator*(const vec2<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator*(const vec2<U> &rhs) const;
 
-	template<scalar U>
-	auto operator/(const vec2<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator/(const vec2<U> &rhs) const;
 
 	template<scalar U>
 	vec2<T> &operator+=(const vec2<U> &rhs);
@@ -86,11 +86,11 @@ struct vec2 {
 
 	// Vector + Scalar
 
-	template<scalar U>
-	auto operator*(U rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator*(U rhs) const;
 
-	template<scalar U>
-	auto operator/(U rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec2<Ret> operator/(U rhs) const;
 
 	template<scalar U>
 	vec2<T> &operator*=(U rhs);

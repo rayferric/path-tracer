@@ -89,7 +89,10 @@
 		"forward_list": "cpp",
 		"unordered_set": "cpp",
 		"valarray": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"execution": "cpp",
+		"queue": "cpp",
+		"span": "cpp"
 	},
 	"cmake.debugConfig": {
 		"cwd": "${workspaceFolder}"

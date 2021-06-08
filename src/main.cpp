@@ -15,7 +15,7 @@ int main() {
 	core::renderer renderer;
 	renderer.resolution = math::uvec2(1024);
 	
-	renderer.load_gltf("assets/suzanne/suzanne.gltf");
+	renderer.load_gltf("assets/dragon/dragon.gltf");
 
 	renderer.render("render.png");
 

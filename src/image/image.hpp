@@ -18,6 +18,8 @@ public:
 
 	void write(const math::uvec2 &pos, uint32_t channel, float value);
 
+	void parallel_for_each(const std::function<void(math::uvec2 &&pixel)> &lambda);
+
 	const math::uvec2 &get_size() const;
 
 	uint32_t get_channel_count() const;
