@@ -1,19 +1,13 @@
 #include "pch.hpp"
 
 #include "core/renderer.hpp"
-
-// fvec3 tonemap_approx_aces(const fvec3 &hdr) {
-// 	constexpr float a = 2.51F;
-// 	const fvec3 b(0.03F);
-// 	constexpr float c = 2.43F;
-// 	const fvec3 d(0.59F);
-// 	const fvec3 e(0.14F);
-// 	return saturate((hdr * (a * hdr + b)) / (hdr * (c * hdr + d) + e));
-// }
+#include "image/image_texture.hpp"
 
 int main() {
 	core::renderer renderer;
-	renderer.resolution = math::uvec2(1024);
+
+	auto hdri = image::image::load("assets/helipad.hdr", false);
+	renderer.environment = std::make_shared<image::image_texture>(hdri);
 	
 	renderer.load_gltf("assets/dragon/dragon.gltf");
 

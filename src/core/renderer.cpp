@@ -12,12 +12,35 @@
 #include "scene/entity.hpp"
 #include "scene/model.hpp"
 #include "scene/transform.hpp"
+#include "threading/thread_pool.hpp"
 
 using namespace geometry;
 using namespace math;
 using namespace scene;
 
 namespace core {
+
+static fvec2 equirectangular_proj(const fvec3 &dir) {
+	return fvec2(
+		math::atan2(dir.z, dir.x) * 0.1591F + 0.5F,
+		math::asin (dir.y)        * 0.3183F + 0.5F
+	);
+}
+
+static fvec3 tonemap_approx_aces(const fvec3 &hdr) {
+	constexpr float a = 2.51F; // TODO Make vectors constexpr-able
+	const fvec3 b(0.03F);
+	constexpr float c = 2.43F;
+	const fvec3 d(0.59F);
+	const fvec3 e(0.14F);
+	return saturate((hdr * (a * hdr + b)) / (hdr * (c * hdr + d) + e));
+}
+
+static fvec3 reflect(const fvec3 &incident, const fvec3 &normal) {
+	return incident - 2 * dot(normal, incident) * normal;
+}
+
+renderer::renderer() : resolution(1920, 1080), thread_count(0) {}
 
 void renderer::load_gltf(const std::filesystem::path &path) {
 	// Import file
@@ -233,39 +256,41 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 void renderer::render(const std::filesystem::path &path) const {
 	auto img = std::make_shared<image::image>(resolution, 3, false, true);
-	
-	// for (uint32_t x = 0; x < resolution.x; x++) {
-	// 	for (uint32_t y = 0; y < resolution.y; y++) {
-	// 		if (y == 0)
-	// 			std::cout << "Drawing column #" << x << std::endl;
-
-	// 		fvec2 ndc = (fvec2(x, y) / resolution) * 2 - fvec2::one;
-	// 		ndc.y = -ndc.y;
-	// 		float ratio = static_cast<float>(resolution.x) / resolution.y;
-
-	// 		ray ray = camera->get_ray(ndc, ratio);
-	// 		fvec3 color = integrate(ray);
-
-	// 		img->write(uvec2(x, y), 0, color.x);
-	// 		img->write(uvec2(x, y), 1, color.y);
-	// 		img->write(uvec2(x, y), 2, color.z);
-	// 	}
-	// }
 
 	std::cout << "Integrating..." << std::endl;
 
-	img->parallel_for_each([&img, this](uvec2 pixel) {
-		fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
-		ndc.y = -ndc.y;
-		float ratio = static_cast<float>(resolution.x) / resolution.y;
+	threading::thread_pool pool(thread_count);
 
-		ray ray = camera->get_ray(ndc, ratio);
-		fvec3 color = integrate(ray);
+	for (uint32_t y = 0; y < resolution.y; y++) {
+		pool.schedule([this, &img, y] {
+			for (uint32_t x = 0; x < resolution.x; x++) {
+				uvec2 pixel(x, y);
 
-		img->write(pixel, 0, color.x);
-		img->write(pixel, 1, color.y);
-		img->write(pixel, 2, color.z);
-	});
+				fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
+				ndc.y = -ndc.y;
+				float ratio = static_cast<float>(resolution.x) / resolution.y;
+
+				ray ray = camera->get_ray(ndc, ratio);
+				fvec3 color = integrate(ray);
+
+				color = tonemap_approx_aces(color);
+
+				img->write(pixel, 0, color.x);
+				img->write(pixel, 1, color.y);
+				img->write(pixel, 2, color.z);
+			}
+		});
+	}
+
+	std::cout << "Waiting..." << std::endl;
+
+	pool.wait();
+
+	// img->parallel_for_each([&img, this](uvec2 pixel) {
+		
+	// });
+
+	std::cout << "Saving..." << std::endl;
 
 	img->save(path);
 }
@@ -273,21 +298,15 @@ void renderer::render(const std::filesystem::path &path) const {
 fvec3 renderer::integrate(const ray &ray) const {
 	auto camera_result = trace(ray);
 
+	fvec3 sample_dir;
+
 	if (!camera_result.hit)
-		return fvec3::zero;
-	else {
-		geometry::ray shadow_ray(
-			camera_result.position + fvec3(1 / math::sqrt3) * math::epsilon,
-			fvec3(1 / math::sqrt3)
-		);
+		sample_dir = ray.get_dir();
+	else
+		sample_dir = reflect(ray.get_dir(), camera_result.normal);
 
-		auto shadow_result = trace(shadow_ray);
-
-		if (shadow_result.hit)
-			return fvec3(0.1F);
-		else
-			return max(dot(camera_result.normal, fvec3(1 / math::sqrt3)), 0.1F);
-	}
+	fvec4 sample = environment->sample(equirectangular_proj(sample_dir));
+	return fvec3(sample.x, sample.y, sample.z);
 }
 
 renderer::trace_result renderer::trace(const ray &ray) const {

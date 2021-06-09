@@ -22,7 +22,7 @@ private:
 	std::condition_variable notifier, wait_notifier;
 	std::mutex mutex, wait_mutex;
 	std::atomic_bool terminating = false;
-	size_t wait_jobs;
+	size_t wait_jobs = 0;
 
 	void process();
 };

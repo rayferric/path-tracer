@@ -14,9 +14,12 @@ namespace core {
 class renderer {
 public:
 	math::uvec2 resolution;
+	uint32_t thread_count;
 	std::shared_ptr<scene::entity> root;
 	std::shared_ptr<scene::camera> camera;
 	std::shared_ptr<image::texture> environment;
+
+	renderer();
 
 	void load_gltf(
 			const std::filesystem::path &path);
