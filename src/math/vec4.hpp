@@ -2,6 +2,7 @@
 
 #include "pch.hpp"
 
+#include "math/vec3.hpp"
 #include "math.hpp"
 
 namespace math {
@@ -30,7 +31,13 @@ struct vec4 {
 	template<scalar U>
 	vec4(const vec4<U> &other);
 
+	template<scalar U>
+	vec4(const vec3<U> &other);
+
 #pragma region Operators
+
+	template<scalar U>
+	operator vec3<U>() const;
 
 	template<scalar U>
 	friend std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs);

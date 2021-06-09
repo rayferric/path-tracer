@@ -13,6 +13,8 @@ class image_texture : public texture {
 public:
 	image_texture(const std::shared_ptr<image> &img);
 
+	static std::shared_ptr<image_texture> load(const std::filesystem::path &path, bool srgb);
+
 	math::fvec4 sample(const math::fvec2 &coord) const override; 
 
 private:

@@ -9,7 +9,7 @@
             "name" : "Scene",
             "nodes" : [
                 0,
-                2
+                3
             ]
         }
     ],
@@ -25,7 +25,7 @@
         },
         {
             "camera" : 0,
-            "name" : "Camera_Orientation",
+            "name" : "Camera_Orientation_Orientation",
             "rotation" : [
                 -0.7071067690849304,
                 0,
@@ -36,6 +36,12 @@
         {
             "children" : [
                 1
+            ],
+            "name" : "Camera_Orientation"
+        },
+        {
+            "children" : [
+                2
             ],
             "name" : "Camera",
             "rotation" : [
@@ -53,9 +59,9 @@
     ],
     "cameras" : [
         {
-            "name" : "Camera.002",
+            "name" : "Camera.003",
             "perspective" : {
-                "aspectRatio" : 1,
+                "aspectRatio" : 1.7777777777777777,
                 "yfov" : 0.6911112070083618,
                 "zfar" : 1000,
                 "znear" : 0.10000000149011612
@@ -68,12 +74,9 @@
             "doubleSided" : true,
             "name" : "dragon",
             "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.800000011920929,
-                    0.800000011920929,
-                    0.800000011920929,
-                    1
-                ],
+                "baseColorTexture" : {
+                    "index" : 0
+                },
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.4000000059604645
             }
@@ -93,6 +96,19 @@
                     "material" : 0
                 }
             ]
+        }
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
+        }
+    ],
+    "images" : [
+        {
+            "mimeType" : "image/png",
+            "name" : "texture",
+            "uri" : "textures/texture.png"
         }
     ],
     "accessors" : [
@@ -151,6 +167,12 @@
             "buffer" : 0,
             "byteLength" : 10456968,
             "byteOffset" : 16675264
+        }
+    ],
+    "samplers" : [
+        {
+            "magFilter" : 9729,
+            "minFilter" : 9987
         }
     ],
     "buffers" : [

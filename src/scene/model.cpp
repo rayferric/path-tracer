@@ -51,6 +51,15 @@ model::intersection model::intersect(
 	if (!nearest_hit.has_hit())
 		return {};
 
+	// To provide correct distance for scaled models,
+	// we transform local hit position to world space
+	// and compute distance to ray origin
+	// fvec3 hit_pos = view_ray.origin + view_ray.get_dir() * nearest_hit.distance;
+	// nearest_hit.distance = distance(ray.origin, transform * hit_pos);
+
+	fvec3 hit_vec = view_ray.get_dir() * nearest_hit.distance;
+	nearest_hit.distance = length(transform.basis * hit_vec);
+
 	return {
 		nearest_hit.distance,
 		transform,

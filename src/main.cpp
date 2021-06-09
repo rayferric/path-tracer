@@ -5,6 +5,7 @@
 
 int main() {
 	core::renderer renderer;
+	// renderer.sample_count = 10;
 
 	auto hdri = image::image::load("assets/helipad.hdr", false);
 	renderer.environment = std::make_shared<image::image_texture>(hdri);

@@ -16,6 +16,8 @@ image::image(uvec2 size, uint32_t channel_count, bool hdr, bool srgb) :
 			&& "At least one channel is required.");
 	assert(channel_count < 5
 			&& "No more than 4 channels are supported.");
+	assert(!hdr || !srgb
+			&& "HDR image can't be sRGB.");
 
 	data.resize(size.x * size.y * channel_count * (hdr ? 4 : 1), 0x0);
 }
@@ -73,17 +75,22 @@ float image::read(const uvec2 &pos, uint32_t channel) const {
 	index = index * channel_count + channel;
 	
 	float value;
+
 	if (hdr) {
 		value = *reinterpret_cast<const float *>(
 				data.data() + (index * 4));
 	} else
 		value = data[index] / 255.0F;
 
-	return math::pow(value, srgb ? 2.2F : 1.0F);
+	if (srgb && channel < 3)
+		value = math::pow(value, 2.2F);
+
+	return value;
 }
 
 void image::write(const uvec2 &pos, uint32_t channel, float value) {
-	value = math::pow(value, srgb ? (1 / 2.2F) : 1.0F);
+	if (srgb && channel < 3)
+		value = math::pow(value, 1 / 2.2F);
 	
 	uint32_t index = pos.y * size.x + pos.x;
 	index = index * channel_count + channel;
@@ -92,20 +99,6 @@ void image::write(const uvec2 &pos, uint32_t channel, float value) {
 		std::memcpy(data.data() + (index * 4), &value, 4);
 	else
 		data[index] = static_cast<uint8_t>(value * 255 + 0.5F);
-}
-
-void image::parallel_for_each(const std::function<void(uvec2 &&pixel)> &lambda) {
-	auto end = data.begin() + (data.size() / channel_count);
-	std::atomic_size_t index = 0;
-
-	std::for_each(std::execution::par_unseq, data.begin(),
-			end, [this, lambda, &index](auto &) {
-		size_t i = index++;
-		lambda(uvec2(
-			i % size.x,
-			i / size.x
-		));
-	});
 }
 
 const math::uvec2 &image::get_size() const {

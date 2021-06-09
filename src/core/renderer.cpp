@@ -4,6 +4,7 @@
 #include "core/mesh.hpp"
 #include "geometry/ray.hpp"
 #include "image/image.hpp"
+#include "image/image_texture.hpp"
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat3.hpp"
@@ -40,7 +41,29 @@ static fvec3 reflect(const fvec3 &incident, const fvec3 &normal) {
 	return incident - 2 * dot(normal, incident) * normal;
 }
 
-renderer::renderer() : resolution(1920, 1080), thread_count(0) {}
+static std::unordered_map<std::string, std::weak_ptr<image::texture>> texture_cache;
+
+static std::shared_ptr<image::texture> get_cached_texture(const std::filesystem::path &path, bool srgb) {
+	if (path.empty())
+		return nullptr;
+
+	std::string path_str = path.string();
+
+	if (texture_cache.contains(path_str)) {
+		auto texture = texture_cache[path_str].lock();
+		if (texture)
+			return texture;
+	}
+
+	auto texture = image::image_texture::load(path, srgb);
+	texture_cache[path_str] = texture;
+	return texture;
+}
+
+renderer::renderer() :
+		resolution(1920, 1080),
+		thread_count(0),
+		sample_count(1) {}
 
 void renderer::load_gltf(const std::filesystem::path &path) {
 	// Import file
@@ -58,90 +81,77 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 	// Create materials
 
-	// std::vector<std::shared_ptr<material>> materials;
-	// materials.reserve(ai_scene->mNumMaterials);
+	std::vector<std::shared_ptr<material>> materials;
+	materials.reserve(ai_scene->mNumMaterials);
 
-	// for(int i = 0; i < ai_scene->mNumMaterials; i++) {
-	// 	aiMaterial *ai_material = ai_scene->mMaterials[i];
+	for(int i = 0; i < ai_scene->mNumMaterials; i++) {
+		aiMaterial *ai_material = ai_scene->mMaterials[i];
 		
-	// 	auto material = std::make_shared<core::material>();
+		auto material = std::make_shared<core::material>();
 
-	// 	int tmp;
+		aiColor4D ai_albedo_opacity;
+		ai_real ai_roughness, ai_metallic;
+		aiColor3D ai_emissive;
 
-	// 	ai_material->Get(AI_MATKEY_TWOSIDED, tmp);
-	// 	if(tmp != 0) material->culling = false;
-	// 	ai_material->Get(AI_MATKEY_GLTF_UNLIT, tmp);
-	// 	if(tmp != 0) material.unlit = true;
+		aiString ai_normal_tex_path;
+		aiString ai_albedo_opacity_tex_path;
+		aiString ai_occlusion_tex_path;
+		aiString ai_roughness_metallic_tex_path;
+		aiString ai_emissive_tex_path;
 
-    //     try(MemoryStack stack = MemoryStack.stackPush()) {
-    //         FloatBuffer buf = stack.mallocFloat(1);
-    //         IntBuffer max = stack.mallocInt(1).put(1).flip();
-    //         aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, aiTextureType_NONE, 0, buf, max);
-    //         material.setMetallic(buf.get(0));
-    //         aiGetMaterialFloatArray(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, aiTextureType_NONE, 0, buf, max);
-    //         material.setRoughness(buf.get(0));
-    //     }
+		ai_material->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, ai_albedo_opacity);
+		ai_material->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, ai_roughness);
+		ai_material->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, ai_metallic);
+		ai_material->Get(AI_MATKEY_COLOR_EMISSIVE, ai_emissive);
 
-    //     AIColor4D aiColor = AIColor4D.create();
-    //     aiGetMaterialColor(aiMaterial, aiAI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, aiTextureType_NONE, 0, aiColor);
-    //     material.setColor(new Vector4f(aiColor.r(), aiColor.g(), aiColor.b(), aiColor.a()));
+		ai_material->GetTexture(aiTextureType_NORMALS, 0, &ai_normal_tex_path);
+		ai_material->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, &ai_albedo_opacity_tex_path);
+		ai_material->GetTexture(aiTextureType_LIGHTMAP, 0, &ai_occlusion_tex_path);
+		ai_material->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &ai_roughness_metallic_tex_path);
+		ai_material->GetTexture(aiTextureType_EMISSIVE, 0, &ai_emissive_tex_path);
 
-    //     if(aiColor.a() < 1) {
-    //         material.setTranslucent(true);
-    //         material.setCulling(false);
-    //     }
+		material->albedo_fac    = fvec3(ai_albedo_opacity.r, ai_albedo_opacity.g, ai_albedo_opacity.b);
+		material->opacity_fac   = ai_albedo_opacity.a;
+		material->roughness_fac = ai_roughness;
+		material->metallic_fac  = ai_metallic;
+		material->emissive_fac  = fvec3(ai_emissive.r, ai_emissive.g, ai_emissive.b);
 
-    //     aiColor.clear();
-    //     aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, aiTextureType_NONE, 0, aiColor);
-    //     material.setEmissive(new Vector3f(aiColor.r(), aiColor.g(), aiColor.b()));
+		auto gltf_dir = path.parent_path();
 
-    //     AIString aiString = AIString.create();
+		if (ai_normal_tex_path.length > 0) {
+			auto normal_tex = get_cached_texture(gltf_dir / ai_normal_tex_path.C_Str(), false);
+			material->normal_tex = normal_tex;
+		}
 
-    //     aiGetMaterialString(aiMaterial, aiAI_MATKEY_GLTF_ALPHAMODE, aiTextureType_NONE, 0, aiString);
-    //     if(aiString.dataString().equals("BLEND")) {
-    //         material.setTranslucent(true);
-    //         material.setCulling(false);
-    //     }
+		if (ai_albedo_opacity_tex_path.length > 0) {
+			auto albedo_opacity_tex = get_cached_texture(gltf_dir / ai_albedo_opacity_tex_path.C_Str(), true);
+			material->albedo_tex = albedo_opacity_tex;
+			material->opacity_tex = albedo_opacity_tex;
+		}
 
-    //     aiString.clear();
-    //     Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-    //     String fileName = aiString.dataString();
-    //     if(!fileName.isEmpty())
-    //         material.setColorMap(getCachedTexture(sceneDir + fileName));
+		if (ai_occlusion_tex_path.length > 0) {
+			auto occlusion_tex = get_cached_texture(gltf_dir / ai_occlusion_tex_path.C_Str(), false);
+			material->occlusion_tex = occlusion_tex;
+		}
 
-    //     aiString.clear();
-    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-    //     fileName = aiString.dataString();
-    //     if(!fileName.isEmpty())
-    //         material.setNormalMap(getCachedTexture(sceneDir + fileName));
+		if (ai_roughness_metallic_tex_path.length > 0) {
+			auto roughness_metallic_tex = get_cached_texture(gltf_dir / ai_roughness_metallic_tex_path.C_Str(), false);
+			material->roughness_tex = roughness_metallic_tex;
+			material->metallic_tex = roughness_metallic_tex;
+		}
 
-    //     aiString.clear();
-    //     Assimp.aiGetMaterialTexture(aiMaterial, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-    //     fileName = aiString.dataString();
-    //     if(!fileName.isEmpty())
-    //         material.setMetallicRoughnessMap(getCachedTexture(sceneDir + fileName));
+		if (ai_emissive_tex_path.length > 0) {
+			auto emissive_tex = get_cached_texture(gltf_dir / ai_emissive_tex_path.C_Str(), true);
+			material->emissive_tex = emissive_tex;
+		}
 
-    //     aiString.clear();
-    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-    //     fileName = aiString.dataString();
-    //     if(!fileName.isEmpty())
-    //         material.setOcclusionMap(getCachedTexture(sceneDir + fileName));
+        materials.push_back(material);
+	}
 
-    //     aiString.clear();
-    //     Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_EMISSIVE, 0, aiString, (IntBuffer)null, null, null, null, null, null);
-    //     fileName = aiString.dataString();
-    //     if(!fileName.isEmpty())
-    //         material.setEmissiveMap(getCachedTexture(sceneDir + fileName));
+	// Create meshes
 
-    //     return material;
-	// }
-
-	// Create surfaces
-
-	std::vector<model::surface> surfaces;
+	std::vector<scene::model::surface> surfaces;
 	surfaces.reserve(ai_scene->mNumMeshes);
-
-	auto material = std::make_shared<core::material>();
 
 	for(uint32_t i = 0; i < ai_scene->mNumMeshes; i++) {
 		aiMesh *ai_mesh = ai_scene->mMeshes[i];
@@ -171,7 +181,7 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 		mesh->recalculate_aabb();
 		mesh->build_kd_tree();
 
-		surfaces.push_back({ mesh, material });
+		surfaces.emplace_back(mesh, materials[ai_mesh->mMaterialIndex]);
 	}
 
 	// We will instantiate just one camera
@@ -208,12 +218,11 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 		// Add components
 
-		uint32_t *ai_mesh_indices = ai_node->mMeshes;
-		if (ai_mesh_indices) {
+		if (ai_node->mMeshes) {
 			auto model = entity->add_component<scene::model>();
 
 			for (uint32_t i = 0; i < ai_node->mNumMeshes; i++)
-				model->surfaces.push_back(surfaces[ai_mesh_indices[i]]);
+				model->surfaces.push_back(surfaces[ai_node->mMeshes[i]]);
 
 			model->recalculate_aabb();
 		}
@@ -257,38 +266,41 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 void renderer::render(const std::filesystem::path &path) const {
 	auto img = std::make_shared<image::image>(resolution, 3, false, true);
 
-	std::cout << "Integrating..." << std::endl;
-
 	threading::thread_pool pool(thread_count);
 
-	for (uint32_t y = 0; y < resolution.y; y++) {
-		pool.schedule([this, &img, y] {
-			for (uint32_t x = 0; x < resolution.x; x++) {
-				uvec2 pixel(x, y);
+	for (uint32_t sample = 0; sample < sample_count; sample++) {
+		std::cout << "Rendering sample #" << (sample + 1) << std::endl;
 
-				fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
-				ndc.y = -ndc.y;
-				float ratio = static_cast<float>(resolution.x) / resolution.y;
+		for (uint32_t y = 0; y < resolution.y; y++) {
+			pool.schedule([this, &img, y, sample] {
+				for (uint32_t x = 0; x < resolution.x; x++) {
+					uvec2 pixel(x, y);
 
-				ray ray = camera->get_ray(ndc, ratio);
-				fvec3 color = integrate(ray);
+					fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
+					ndc.y = -ndc.y;
+					float ratio = static_cast<float>(resolution.x) / resolution.y;
 
-				color = tonemap_approx_aces(color);
+					ray ray = camera->get_ray(ndc, ratio);
+					fvec3 color = integrate(ray);
 
-				img->write(pixel, 0, color.x);
-				img->write(pixel, 1, color.y);
-				img->write(pixel, 2, color.z);
-			}
-		});
+					color = tonemap_approx_aces(color);
+
+					float r = img->read(pixel, 0);
+					float g = img->read(pixel, 1);
+					float b = img->read(pixel, 2);
+
+					color += fvec3(r, g, b) * sample;
+					color *= 1.0F / (sample + 1);
+
+					img->write(pixel, 0, color.x);
+					img->write(pixel, 1, color.y);
+					img->write(pixel, 2, color.z);
+				}
+			});
+		}
+
+		pool.wait();
 	}
-
-	std::cout << "Waiting..." << std::endl;
-
-	pool.wait();
-
-	// img->parallel_for_each([&img, this](uvec2 pixel) {
-		
-	// });
 
 	std::cout << "Saving..." << std::endl;
 
@@ -298,15 +310,14 @@ void renderer::render(const std::filesystem::path &path) const {
 fvec3 renderer::integrate(const ray &ray) const {
 	auto camera_result = trace(ray);
 
-	fvec3 sample_dir;
-
 	if (!camera_result.hit)
-		sample_dir = ray.get_dir();
-	else
-		sample_dir = reflect(ray.get_dir(), camera_result.normal);
+		return fvec3(environment->sample(equirectangular_proj(ray.get_dir())));
 
-	fvec4 sample = environment->sample(equirectangular_proj(sample_dir));
-	return fvec3(sample.x, sample.y, sample.z);
+	fvec3 sample_dir = reflect(ray.get_dir(), camera_result.normal);
+	fvec3 color = fvec3(environment->sample(equirectangular_proj(sample_dir)));
+	color *= camera_result.material->get_albedo(camera_result.tex_coord);
+
+	return color;
 }
 
 renderer::trace_result renderer::trace(const ray &ray) const {
@@ -346,6 +357,7 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 	auto &v2 = mesh->vertices[indices.y];
 	auto &v3 = mesh->vertices[indices.z];
 
+	// Normals will have to be normalized if transform applies scale
 	transform transform = nearest_hit.transform;
 	fmat3 normal_matrix = transpose(inverse(nearest_hit.transform.basis));
 
@@ -357,14 +369,14 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 			v1.tex_coord * nearest_hit.barycentric.x +
 			v2.tex_coord * nearest_hit.barycentric.y +
 			v3.tex_coord * nearest_hit.barycentric.z;
-	fvec3 normal = normal_matrix * (
+	fvec3 normal = normalize(normal_matrix * (
 			v1.normal    * nearest_hit.barycentric.x +
 			v2.normal    * nearest_hit.barycentric.y +
-			v3.normal    * nearest_hit.barycentric.z);
-	fvec3 tangent = normal_matrix * (
+			v3.normal    * nearest_hit.barycentric.z));
+	fvec3 tangent = normalize(normal_matrix * (
 			v1.tangent   * nearest_hit.barycentric.x +
 			v2.tangent   * nearest_hit.barycentric.y +
-			v3.tangent   * nearest_hit.barycentric.z);
+			v3.tangent   * nearest_hit.barycentric.z));
 
 	return {
 		true,

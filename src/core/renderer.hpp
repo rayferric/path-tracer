@@ -15,6 +15,7 @@ class renderer {
 public:
 	math::uvec2 resolution;
 	uint32_t thread_count;
+	uint32_t sample_count;
 	std::shared_ptr<scene::entity> root;
 	std::shared_ptr<scene::camera> camera;
 	std::shared_ptr<image::texture> environment;

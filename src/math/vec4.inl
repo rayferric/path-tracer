@@ -48,7 +48,18 @@ template<scalar U>
 vec4<T>::vec4(const vec4<U> &other) :
 		x(other.x), y(other.y), z(other.z), w(other.w) {}
 
+template<scalar T>
+template<scalar U>
+vec4<T>::vec4(const vec3<U> &other) :
+		x(other.x), y(other.y), z(other.z), w(0) {}
+
 #pragma region Operators
+
+template<scalar T>
+template<scalar U>
+vec4<T>::operator vec3<U>() const {
+	return vec3<U>(x, y, z);
+}
 
 template<scalar U>
 std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs) {

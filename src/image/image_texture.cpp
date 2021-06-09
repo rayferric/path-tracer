@@ -9,6 +9,11 @@ namespace image {
 image_texture::image_texture(const std::shared_ptr<image> &img)
 		: img(img) {}
 
+std::shared_ptr<image_texture> image_texture::load(
+		const std::filesystem::path &path, bool srgb) {
+	return std::make_shared<image_texture>(image::load(path, srgb));
+}
+
 fvec4 image_texture::sample(const fvec2 &coord) const {
 	// Nearest
 	
