@@ -2,7 +2,8 @@
 
 #include "pch.hpp"
 
-#include "math.hpp"
+#include "math/math.hpp"
+#include "math/vec2.hpp"
 
 namespace math {
 
@@ -17,18 +18,27 @@ struct vec3 {
     static const vec3<T> forward;
     static const vec3<T> backward;
 
-	T x, y, z;
+	union {
+		struct { T x, y, z; };
+		T data[3];
+	};
 
-	vec3();
+	constexpr vec3();
 
-	vec3(T all);
+	constexpr vec3(T all);
 
-	vec3(T x, T y, T z);
+	constexpr vec3(T x, T y, T z);
 
 	template<scalar U>
-	vec3(const vec3<U> &other);
+	constexpr vec3(const vec3<U> &other);
+
+	template<scalar U>
+	constexpr vec3(const vec2<U> &other);
 
 #pragma region Operators
+
+	template<scalar U>
+	operator vec2<U>() const;
 
 	template<scalar U>
 	friend std::ostream &operator<<(std::ostream &lhs, const vec3<U> &rhs);
@@ -102,8 +112,8 @@ struct vec3 {
 
 	// Scalar + Vector
 
-	template<scalar L, scalar R>
-	friend auto operator*(L lhs, const vec3<R> &rhs);
+	template<scalar L, scalar R, scalar Ret>
+	friend vec3<Ret> operator*(L lhs, const vec3<R> &rhs);
 
 #pragma endregion
 

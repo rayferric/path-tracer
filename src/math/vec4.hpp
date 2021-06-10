@@ -2,8 +2,8 @@
 
 #include "pch.hpp"
 
+#include "math/math.hpp"
 #include "math/vec3.hpp"
-#include "math.hpp"
 
 namespace math {
 
@@ -20,24 +20,33 @@ struct vec4 {
 	static const vec4<T> past;
     static const vec4<T> future;
 
-	T x, y, z, w;
+	union {
+		struct { T x, y, z, w; };
+		T data[4];
+	};
 
-	vec4();
+	constexpr vec4();
 
-	vec4(T all);
+	constexpr vec4(T all);
 
-	vec4(T x, T y, T z, T w);
+	constexpr vec4(T x, T y, T z, T w);
 
 	template<scalar U>
-	vec4(const vec4<U> &other);
+	constexpr vec4(const vec4<U> &other);
 
 	template<scalar U>
-	vec4(const vec3<U> &other);
+	constexpr vec4(const vec3<U> &other);
+
+	template<scalar U>
+	constexpr vec4(const vec2<U> &other);
 
 #pragma region Operators
 
 	template<scalar U>
 	operator vec3<U>() const;
+
+	template<scalar U>
+	operator vec2<U>() const;
 
 	template<scalar U>
 	friend std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs);
@@ -71,17 +80,17 @@ struct vec4 {
 
 	// Vector + Vector
 
-	template<scalar U>
-	auto operator+(const vec4<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator+(const vec4<U> &rhs) const;
 
-	template<scalar U>
-	auto operator-(const vec4<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator-(const vec4<U> &rhs) const;
 
-	template<scalar U>
-	auto operator*(const vec4<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator*(const vec4<U> &rhs) const;
 
-	template<scalar U>
-	auto operator/(const vec4<U> &rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator/(const vec4<U> &rhs) const;
 
 	template<scalar U>
 	vec4<T> &operator+=(const vec4<U> &rhs);
@@ -97,11 +106,11 @@ struct vec4 {
 
 	// Vector + Scalar
 
-	template<scalar U>
-	auto operator*(U rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator*(U rhs) const;
 
-	template<scalar U>
-	auto operator/(U rhs) const;
+	template<scalar U, scalar Ret = std::common_type_t<T, U>>
+	vec4<Ret> operator/(U rhs) const;
 
 	template<scalar U>
 	vec4<T> &operator*=(U rhs);
@@ -111,8 +120,8 @@ struct vec4 {
 
 	// Scalar + Vector
 
-	template<scalar L, scalar R>
-	friend auto operator*(L lhs, const vec4<R> &rhs);
+	template<scalar L, scalar R, scalar Ret>
+	friend vec4<Ret> operator*(L lhs, const vec4<R> &rhs);
 
 #pragma endregion
 

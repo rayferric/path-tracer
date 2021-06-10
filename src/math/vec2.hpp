@@ -2,7 +2,7 @@
 
 #include "pch.hpp"
 
-#include "math.hpp"
+#include "math/math.hpp"
 
 namespace math {
 
@@ -15,16 +15,19 @@ struct vec2 {
     static const vec2<T> down;
     static const vec2<T> up;
 
-	T x, y;
+	union {
+		struct { T x, y; };
+		T data[2];
+	};
 
-	vec2();
+	constexpr vec2();
 
-	vec2(T all);
+	constexpr vec2(T all);
 
-	vec2(T x, T y);
+	constexpr vec2(T x, T y);
 
 	template<scalar U>
-	vec2(const vec2<U> &other);
+	constexpr vec2(const vec2<U> &other);
 
 #pragma region Operators
 
@@ -100,8 +103,8 @@ struct vec2 {
 
 	// Scalar + Vector
 
-	template<scalar L, scalar R>
-	friend auto operator*(L lhs, const vec2<R> &rhs);
+	template<scalar L, scalar R, scalar Ret>
+	friend vec2<Ret> operator*(L lhs, const vec2<R> &rhs);
 
 #pragma endregion
 

@@ -27,22 +27,33 @@ template<scalar T>
 const vec3<T> vec3<T>::backward(0, 0, 1);
 
 template<scalar T>
-vec3<T>::vec3() : vec3(0) {}
+constexpr vec3<T>::vec3() : vec3(0) {}
 
 template<scalar T>
-vec3<T>::vec3(T all) :
+constexpr vec3<T>::vec3(T all) :
 		x(all), y(all), z(all) {}
 
 template<scalar T>
-vec3<T>::vec3(T x, T y, T z) :
+constexpr vec3<T>::vec3(T x, T y, T z) :
 		x(x), y(y), z(z) {}
 
 template<scalar T>
 template<scalar U>
-vec3<T>::vec3(const vec3<U> &other) :
+constexpr vec3<T>::vec3(const vec3<U> &other) :
 		x(other.x), y(other.y), z(other.z) {}
 
+template<scalar T>
+template<scalar U>
+constexpr vec3<T>::vec3(const vec2<U> &other) :
+		x(other.x), y(other.y), z(0) {}
+
 #pragma region Operators
+
+template<scalar T>
+template<scalar U>
+vec3<T>::operator vec2<U>() const {
+	return vec2<U>(x, y);
+}
 
 template<scalar U>
 std::ostream &operator<<(std::ostream &lhs, const vec3<U> &rhs) {
@@ -54,12 +65,12 @@ std::ostream &operator<<(std::ostream &lhs, const vec3<U> &rhs) {
 
 template<scalar T>
 T &vec3<T>::operator[](size_t index) {
-	return *(reinterpret_cast<T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
 const T &vec3<T>::operator[](size_t index) const {
-	return *(reinterpret_cast<const T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
@@ -186,9 +197,9 @@ vec3<T> &vec3<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R>
-auto operator*(L lhs, const vec3<R> &rhs) {
-	return vec3(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
+template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+vec3<Ret> operator*(L lhs, const vec3<R> &rhs) {
+	return vec3<Ret>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
 }
 
 #pragma endregion

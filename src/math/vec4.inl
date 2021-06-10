@@ -33,25 +33,30 @@ template<scalar T>
 const vec4<T> vec4<T>::future(0, 0, 0, 1);
 
 template<scalar T>
-vec4<T>::vec4() : vec4(0) {}
+constexpr vec4<T>::vec4() : vec4(0) {}
 
 template<scalar T>
-vec4<T>::vec4(T all) :
+constexpr vec4<T>::vec4(T all) :
 		x(all), y(all), z(all), w(all) {}
 
 template<scalar T>
-vec4<T>::vec4(T x, T y, T z, T w) :
+constexpr vec4<T>::vec4(T x, T y, T z, T w) :
 		x(x), y(y), z(z), w(w) {}
 
 template<scalar T>
 template<scalar U>
-vec4<T>::vec4(const vec4<U> &other) :
+constexpr vec4<T>::vec4(const vec4<U> &other) :
 		x(other.x), y(other.y), z(other.z), w(other.w) {}
 
 template<scalar T>
 template<scalar U>
-vec4<T>::vec4(const vec3<U> &other) :
+constexpr vec4<T>::vec4(const vec3<U> &other) :
 		x(other.x), y(other.y), z(other.z), w(0) {}
+
+template<scalar T>
+template<scalar U>
+constexpr vec4<T>::vec4(const vec2<U> &other) :
+		x(other.x), y(other.y), z(0), w(0) {}
 
 #pragma region Operators
 
@@ -59,6 +64,12 @@ template<scalar T>
 template<scalar U>
 vec4<T>::operator vec3<U>() const {
 	return vec3<U>(x, y, z);
+}
+
+template<scalar T>
+template<scalar U>
+vec4<T>::operator vec2<U>() const {
+	return vec2<U>(x, y);
 }
 
 template<scalar U>
@@ -72,12 +83,12 @@ std::ostream &operator<<(std::ostream &lhs, const vec4<U> &rhs) {
 
 template<scalar T>
 T &vec4<T>::operator[](size_t index) {
-	return *(reinterpret_cast<T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
 const T &vec4<T>::operator[](size_t index) const {
-	return *(reinterpret_cast<const T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
@@ -129,27 +140,27 @@ vec4<bool> vec4<T>::operator>(const vec4<U> &rhs) const {
 // Vector + Vector
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator+(const vec4<U> &rhs) const {
-	return vec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator+(const vec4<U> &rhs) const {
+	return vec4<Ret>(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator-(const vec4<U> &rhs) const {
-	return vec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator-(const vec4<U> &rhs) const {
+	return vec4<Ret>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator*(const vec4<U> &rhs) const {
-	return vec4(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator*(const vec4<U> &rhs) const {
+	return vec4<Ret>(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator/(const vec4<U> &rhs) const {
-	return vec4(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator/(const vec4<U> &rhs) const {
+	return vec4<Ret>(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w);
 }
 
 
@@ -180,15 +191,15 @@ vec4<T> &vec4<T>::operator/=(const vec4<U> &rhs) {
 // Vector + Scalar
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator*(U rhs) const {
-	return vec4(x * rhs, y * rhs, z * rhs, w * rhs.w);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator*(U rhs) const {
+	return vec4<Ret>(x * rhs, y * rhs, z * rhs, w * rhs.w);
 }
 
 template<scalar T>
-template<scalar U>
-auto vec4<T>::operator/(U rhs) const {
-	return vec4(x / rhs, y / rhs, z / rhs, w / rhs);
+template<scalar U, scalar Ret>
+vec4<Ret> vec4<T>::operator/(U rhs) const {
+	return vec4<Ret>(x / rhs, y / rhs, z / rhs, w / rhs);
 }
 
 template<scalar T>
@@ -205,9 +216,9 @@ vec4<T> &vec4<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R>
-auto operator*(L lhs, const vec4<R> &rhs) {
-	return vec4(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w);
+template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+vec4<Ret> operator*(L lhs, const vec4<R> &rhs) {
+	return vec4<Ret>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w);
 }
 
 #pragma endregion

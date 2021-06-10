@@ -68,12 +68,12 @@ std::ostream &operator<<(std::ostream &lhs, const mat3<U> &rhs) {
 
 template<scalar T>
 vec3<T> &mat3<T>::operator[](size_t index) {
-	return *(reinterpret_cast<vec3<T> *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
 const vec3<T> &mat3<T>::operator[](size_t index) const {
-	return *(reinterpret_cast<const vec3<T> *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>

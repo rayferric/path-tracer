@@ -12,7 +12,10 @@ struct mat3 {
 	static const mat3<T> zero;
 	static const mat3<T> identity;
 
-	vec3<T> x, y, z;
+	union {
+		struct { vec3<T> x, y, z; };
+		vec3<T> data[3];
+	};
 
 	mat3();
 

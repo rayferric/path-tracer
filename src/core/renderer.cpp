@@ -30,10 +30,10 @@ static fvec2 equirectangular_proj(const fvec3 &dir) {
 
 static fvec3 tonemap_approx_aces(const fvec3 &hdr) {
 	constexpr float a = 2.51F; // TODO Make vectors constexpr-able
-	const fvec3 b(0.03F);
+	constexpr fvec3 b(0.03F);
 	constexpr float c = 2.43F;
-	const fvec3 d(0.59F);
-	const fvec3 e(0.14F);
+	constexpr fvec3 d(0.59F);
+	constexpr fvec3 e(0.14F);
 	return saturate((hdr * (a * hdr + b)) / (hdr * (c * hdr + d) + e));
 }
 
@@ -163,19 +163,33 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 		for (size_t i = 0; i < mesh->vertices.size(); i++) {
 			vertex &v = mesh->vertices[i];
 
-			v.position  = *reinterpret_cast<fvec3 *>
-					(ai_mesh->mVertices + i);
-			v.tex_coord = *reinterpret_cast<fvec2 *>
-					(ai_mesh->mTextureCoords[0] + i);
-			v.normal    = *reinterpret_cast<fvec3 *>
-					(ai_mesh->mNormals + i);
-			v.tangent   = *reinterpret_cast<fvec3 *>
-					(ai_mesh->mTangents + i);
+			aiVector3D &position  = ai_mesh->mVertices[i];
+			aiVector3D &tex_coord = ai_mesh->mTextureCoords[0][i];
+			aiVector3D &normal    = ai_mesh->mNormals[i];
+			aiVector3D &tangent   = ai_mesh->mTangents[i];
+
+			v.position.x = position.x;
+			v.position.y = position.y;
+			v.position.z = position.z;
+
+			v.tex_coord.x = tex_coord.x;
+			v.tex_coord.y = tex_coord.y;
+
+			v.normal.x = normal.x;
+			v.normal.y = normal.y;
+			v.normal.z = normal.z;
+			
+			v.tangent.x = tangent.x;
+			v.tangent.y = tangent.y;
+			v.tangent.z = tangent.z;
 		}
 
 		for (size_t i = 0; i < mesh->triangles.size(); i++) {
-			mesh->triangles[i] = *reinterpret_cast<uvec3 *>(
-					ai_mesh->mFaces[i].mIndices);
+			unsigned int *indices = ai_mesh->mFaces[i].mIndices;
+			
+			mesh->triangles[i].x = indices[0];
+			mesh->triangles[i].y = indices[1];
+			mesh->triangles[i].z = indices[2];
 		}
 
 		mesh->recalculate_aabb();

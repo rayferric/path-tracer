@@ -21,19 +21,19 @@ template<scalar T>
 const vec2<T> vec2<T>::up(0, 1);
 
 template<scalar T>
-vec2<T>::vec2() : vec2(0) {}
+constexpr vec2<T>::vec2() : vec2(0) {}
 
 template<scalar T>
-vec2<T>::vec2(T all) :
+constexpr vec2<T>::vec2(T all) :
 		x(all), y(all) {}
 
 template<scalar T>
-vec2<T>::vec2(T x, T y) :
+constexpr vec2<T>::vec2(T x, T y) :
 		x(x), y(y) {}
 
 template<scalar T>
 template<scalar U>
-vec2<T>::vec2(const vec2<U> &other) :
+constexpr vec2<T>::vec2(const vec2<U> &other) :
 		x(other.x), y(other.y) {}
 
 #pragma region Operators
@@ -47,12 +47,12 @@ std::ostream &operator<<(std::ostream &lhs, const vec2<U> &rhs) {
 
 template<scalar T>
 T &vec2<T>::operator[](size_t index) {
-	return *(reinterpret_cast<T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
 const T &vec2<T>::operator[](size_t index) const {
-	return *(reinterpret_cast<const T *>(this) + index);
+	return data[index];
 }
 
 template<scalar T>
@@ -179,9 +179,9 @@ vec2<T> &vec2<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R>
-auto operator*(L lhs, const vec2<R> &rhs) {
-	return vec2(lhs * rhs.x, lhs * rhs.y);
+template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+vec2<Ret> operator*(L lhs, const vec2<R> &rhs) {
+	return vec2<Ret>(lhs * rhs.x, lhs * rhs.y);
 }
 
 #pragma endregion
