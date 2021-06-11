@@ -274,9 +274,9 @@ bool is_orthogonal(const mat3<T> &mat, Epsilon epsilon) {
 template<scalar T, scalar Epsilon>
 bool is_orthonormal(const mat3<T> &mat, Epsilon epsilon) {
 	return is_orthogonal(mat, epsilon) &&
-		    is_normalized(mat.x, epsilon) &&
-		    is_normalized(mat.y, epsilon) &&
-		    is_normalized(mat.z, epsilon);
+			is_normalized(mat.x, epsilon) &&
+			is_normalized(mat.y, epsilon) &&
+			is_normalized(mat.z, epsilon);
 }
 
 template<floating_point T>

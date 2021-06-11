@@ -208,7 +208,7 @@ inline int32_t sign(X x) {
 template<scalar From, scalar To, scalar X, scalar Ret>
 inline Ret smoothstep(From from, To to, X x) {
 	Ret t = saturate((x - from) / (to - from));
-    return t * t * (3 - 2 * t);
+	return t * t * (3 - 2 * t);
 }
 
 template<scalar Edge, scalar X>

@@ -60,7 +60,7 @@ static std::tuple<
 		bool lassign = false, rassign = false;
 		
 		for (size_t i = 0; i < 3; i++) {
-			const fvec3 &vertex = *(&triangle.a + i);
+			const fvec3 &vertex = triangle[i];
 			if (vertex[axis] < split)
 				lassign = true;
 			else

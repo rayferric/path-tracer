@@ -13,11 +13,18 @@ struct triangle {
 		bool has_hit() const;
 	};
 
-	math::fvec3 a, b, c;
+	union {
+		struct { math::fvec3 a, b, c; };
+		math::fvec3 data[3];
+	};
 
 	triangle(const math::fvec3 &a,
 			 const math::fvec3 &b,
 			 const math::fvec3 &c);
+
+	math::fvec3 &operator[](size_t index);
+
+	const math::fvec3 &operator[](size_t index) const;
 
 	intersection intersect(const ray &ray) const;
 };

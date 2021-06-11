@@ -16,6 +16,14 @@ triangle::triangle(
 		const fvec3 &c
 		) : a(a), b(b), c(c) {}
 
+math::fvec3 &triangle::operator[](size_t index) {
+	return data[index];
+}
+
+const math::fvec3 &triangle::operator[](size_t index) const {
+	return data[index];
+}
+
 // Geometric solution
 // https://youtu.be/EZXz-uPyCyA
 

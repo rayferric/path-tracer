@@ -253,6 +253,25 @@ vec3<Ret> proj(const vec3<To> &to, const vec3<From> &from) {
 	return (dot(to, from) / dot(to, to)) * to;
 }
 
+template<scalar Incident, scalar Normal, scalar Ret>
+vec3<Ret> reflect(const vec3<Incident> &incident,
+		const vec3<Normal> &normal) {
+	return incident - 2 * dot(normal, incident) * normal;
+}
+
+template<scalar Incident, scalar Normal,
+		scalar IorRatio, scalar Ret>
+vec3<Ret> refract(const vec3<Incident> &incident,
+		const vec3<Normal> &normal, IorRatio ior_ratio) {
+	Ret cos_theta = dot(incident, normal);
+	Ret k = 1 - ior_ratio * ior_ratio * (1 - cos_theta * cos_theta);
+	if (k < 0)
+		return vec3<Ret>::zero;
+	
+	return ior_ratio * incident -
+		(ior_ratio * cos_theta + sqrt(k)) * normal;
+}
+
 #pragma region Component-Wise Math Wrappers
 
 template<scalar X>

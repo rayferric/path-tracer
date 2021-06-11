@@ -30,14 +30,17 @@ public:
 private:
 	struct trace_result {
 		bool hit;
+		std::shared_ptr<core::material> material;
+
 		math::fvec3 position;
 		math::fvec2 tex_coord;
 		math::fvec3 normal;
 		math::fvec3 tangent;
-		std::shared_ptr<core::material> material;
+
+		math::fvec3 get_normal() const;
 	};
 
-	math::fvec3 integrate(const geometry::ray &ray) const;
+	math::fvec3 integrate(const geometry::ray &ray, uint8_t bounces) const;
 
 	trace_result trace(const geometry::ray &ray) const;
 };

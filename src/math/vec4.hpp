@@ -9,16 +9,16 @@ namespace math {
 
 template<scalar T>
 struct vec4 {
-    static const vec4<T> zero;
-    static const vec4<T> one;
-    static const vec4<T> left;
-    static const vec4<T> right;
-    static const vec4<T> down;
-    static const vec4<T> up;
-    static const vec4<T> forward;
-    static const vec4<T> backward;
+	static const vec4<T> zero;
+	static const vec4<T> one;
+	static const vec4<T> left;
+	static const vec4<T> right;
+	static const vec4<T> down;
+	static const vec4<T> up;
+	static const vec4<T> forward;
+	static const vec4<T> backward;
 	static const vec4<T> past;
-    static const vec4<T> future;
+	static const vec4<T> future;
 
 	union {
 		struct { T x, y, z, w; };

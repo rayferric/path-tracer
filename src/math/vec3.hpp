@@ -9,14 +9,14 @@ namespace math {
 
 template<scalar T>
 struct vec3 {
-    static const vec3<T> zero;
-    static const vec3<T> one;
-    static const vec3<T> left;
-    static const vec3<T> right;
-    static const vec3<T> down;
-    static const vec3<T> up;
-    static const vec3<T> forward;
-    static const vec3<T> backward;
+	static const vec3<T> zero;
+	static const vec3<T> one;
+	static const vec3<T> left;
+	static const vec3<T> right;
+	static const vec3<T> down;
+	static const vec3<T> up;
+	static const vec3<T> forward;
+	static const vec3<T> backward;
 
 	union {
 		struct { T x, y, z; };
@@ -155,6 +155,16 @@ vec3<T> normalize(const vec3<T> &vec);
 template<floating_point To, floating_point From,
 		scalar Ret = std::common_type_t<To, From>>
 vec3<Ret> proj(const vec3<To> &to, const vec3<From> &from);
+
+template<scalar Incident, scalar Normal,
+		scalar Ret = std::common_type_t<Incident, Normal>>
+vec3<Ret> reflect(const vec3<Incident> &incident,
+		const vec3<Normal> &normal);
+
+template<scalar Incident, scalar Normal, scalar IorRatio,
+		scalar Ret = std::common_type_t<Incident, Normal, IorRatio>>
+vec3<Ret> refract(const vec3<Incident> &incident,
+		const vec3<Normal> &normal, IorRatio ior_ratio);
 
 #pragma region Component-Wise Math Wrappers
 

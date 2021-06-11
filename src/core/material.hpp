@@ -14,6 +14,7 @@ public:
 	float roughness_fac = 1;
 	float metallic_fac = 1;
 	math::fvec3 emissive_fac = 1;
+	float ior = 1.33F;
 
 	std::shared_ptr<image::texture>
 			normal_tex    = nullptr,
@@ -23,6 +24,8 @@ public:
 			roughness_tex = nullptr,
 			metallic_tex  = nullptr,
 			emissive_tex  = nullptr;
+
+	math::fvec3 get_normal(const math::fvec2 &coord) const;
 
 	math::fvec3 get_albedo(const math::fvec2 &coord) const;
 

@@ -2,6 +2,7 @@
 
 #include "core/material.hpp"
 #include "core/mesh.hpp"
+#include "core/pbr.hpp"
 #include "geometry/ray.hpp"
 #include "image/image.hpp"
 #include "image/image_texture.hpp"
@@ -20,6 +21,20 @@ using namespace math;
 using namespace scene;
 
 namespace core {
+
+static float rand() {
+	static std::mt19937 rng{std::random_device{}()};
+	static std::uniform_real_distribution<float> dist(0, 1);
+
+	return dist(rng);
+}
+
+static fvec3 rand_sphere_dir() {
+	float s = rand() * 2 * math::pi;
+	float t = rand() * 2 - 1;
+
+	return fvec3(math::sin(s), math::cos(s), t) / math::sqrt(t * t + 1);
+}
 
 static fvec2 equirectangular_proj(const fvec3 &dir) {
 	return fvec2(
@@ -77,7 +92,7 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 
 	if(!ai_scene || (ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) > 0
 			|| !ai_scene->mRootNode)
-        throw std::runtime_error(importer.GetErrorString());
+		throw std::runtime_error(importer.GetErrorString());
 
 	// Create materials
 
@@ -145,7 +160,7 @@ void renderer::load_gltf(const std::filesystem::path &path) {
 			material->emissive_tex = emissive_tex;
 		}
 
-        materials.push_back(material);
+		materials.push_back(material);
 	}
 
 	// Create meshes
@@ -295,7 +310,7 @@ void renderer::render(const std::filesystem::path &path) const {
 					float ratio = static_cast<float>(resolution.x) / resolution.y;
 
 					ray ray = camera->get_ray(ndc, ratio);
-					fvec3 color = integrate(ray);
+					fvec3 color = integrate(ray, 4);
 
 					color = tonemap_approx_aces(color);
 
@@ -321,17 +336,74 @@ void renderer::render(const std::filesystem::path &path) const {
 	img->save(path);
 }
 
-fvec3 renderer::integrate(const ray &ray) const {
-	auto camera_result = trace(ray);
+fvec3 renderer::trace_result::get_normal() const {
+	vec3 binormal = cross(tangent, normal);
+	fmat3 tbn(tangent, binormal, normal);
 
-	if (!camera_result.hit)
+	return tbn * material->get_normal(tex_coord);
+}
+
+fvec3 renderer::integrate(const ray &ray, uint8_t bounces) const {
+	// auto camera_result = trace(ray);
+
+	// if (!camera_result.hit)
+	// 	return fvec3(environment->sample(equirectangular_proj(ray.get_dir())));
+
+	// fvec3 sample_dir = reflect(ray.get_dir(), camera_result.normal);
+	// fvec3 color = fvec3(environment->sample(equirectangular_proj(sample_dir)));
+	// color *= camera_result.material->get_albedo(camera_result.tex_coord);
+
+	// return color;
+
+	if (bounces == 0)
+		return fvec3::zero;
+
+	auto result = trace(ray);
+
+	if (!result.hit)
 		return fvec3(environment->sample(equirectangular_proj(ray.get_dir())));
 
-	fvec3 sample_dir = reflect(ray.get_dir(), camera_result.normal);
-	fvec3 color = fvec3(environment->sample(equirectangular_proj(sample_dir)));
-	color *= camera_result.material->get_albedo(camera_result.tex_coord);
+	fvec3 normal = result.get_normal();
+	fvec3 outcoming = -ray.get_dir();
 
-	return color;
+	fvec3 albedo = result.material->get_albedo(result.tex_coord);
+	float opacity = result.material->get_opacity(result.tex_coord);
+	float roughness = result.material->get_roughness(result.tex_coord);
+	float metallic = result.material->get_metallic(result.tex_coord);
+	fvec3 emissive = result.material->get_emissive(result.tex_coord);
+	float ior = result.material->ior;
+
+	// We guess distribution and find a random
+	// direction that satisfies given constraints
+	// (importance sampling)
+	float distribution = max(math::sqrt(rand()), 0.9F);
+	fvec3 incoming = pbr::inverse_distribution_ggx(
+			distribution, normal, outcoming, roughness, rand());
+
+	float geometry = pbr::geometry_smith(
+			normal, outcoming, incoming, roughness);
+
+	float fresnel = pbr::fresnel_schlick(outcoming, incoming, ior);
+
+	// Microfacet model:
+// L = (F * D * G) / (4 *
+//         dot(normal, outgoing) *
+//         dot(normal, incoming))
+
+	float n_dot_o = dot(normal, outcoming);
+	float n_dot_i = dot(normal, incoming);
+
+	//float diffuse = n_dot_i / math::pi;
+	float specular = (distribution) / (4 * n_dot_o * n_dot_i);
+	
+	//float contribution = diffuse * (1 - metallic)
+
+	geometry::ray new_ray(
+		result.position + incoming * math::epsilon,
+		incoming
+	);
+
+	return specular * integrate(new_ray, bounces - 1);
 }
 
 renderer::trace_result renderer::trace(const ray &ray) const {
@@ -394,11 +466,11 @@ renderer::trace_result renderer::trace(const ray &ray) const {
 
 	return {
 		true,
+		material,
 		position,
 		tex_coord,
 		normal,
-		tangent,
-		material
+		tangent
 	};
 }
 

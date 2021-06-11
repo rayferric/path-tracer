@@ -8,12 +8,12 @@ namespace math {
 
 template<scalar T>
 struct vec2 {
-    static const vec2<T> zero;
-    static const vec2<T> one;
-    static const vec2<T> left;
-    static const vec2<T> right;
-    static const vec2<T> down;
-    static const vec2<T> up;
+	static const vec2<T> zero;
+	static const vec2<T> one;
+	static const vec2<T> left;
+	static const vec2<T> right;
+	static const vec2<T> down;
+	static const vec2<T> up;
 
 	union {
 		struct { T x, y; };

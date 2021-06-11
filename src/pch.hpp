@@ -17,6 +17,7 @@
 #include <memory>
 #include <numbers>
 #include <numeric>
+#include <random>
 #include <sstream>
 #include <stack>
 #include <stdexcept>

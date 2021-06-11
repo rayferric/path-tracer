@@ -4,6 +4,13 @@ using namespace math;
 
 namespace core {
 
+math::fvec3 material::get_normal(const math::fvec2 &coord) const {
+	if (normal_tex)
+		return normal_tex->sample(coord);
+	else
+		return fvec3(0.5F, 0.5F, 1);
+}
+
 fvec3 material::get_albedo(const fvec2 &coord) const {
 	fvec3 albedo = albedo_fac;
 	if (albedo_tex)
@@ -19,10 +26,10 @@ float material::get_opacity(const fvec2 &coord) const {
 }
 
 float material::get_occlusion(const fvec2 &coord) const {
-	float occlusion = 1;
 	if (occlusion_tex)
-		occlusion *= occlusion_tex->sample(coord).x;
-	return occlusion;
+		return occlusion_tex->sample(coord).x;
+	else
+		return 1;
 }
 
 float material::get_roughness(const fvec2 &coord) const {
