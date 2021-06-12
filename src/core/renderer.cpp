@@ -22,6 +22,21 @@ using namespace scene;
 
 namespace core {
 
+// static float van_der_corput(uint32_t bits) {
+//     bits = (bits << 16) | (bits >> 16);
+
+//     bits = ((bits & 0x55555555Ui32) << 1) | ((bits & 0xAAAAAAAAUi32) >> 1);
+//     bits = ((bits & 0x33333333Ui32) << 2) | ((bits & 0xCCCCCCCCUi32) >> 2);
+//     bits = ((bits & 0x0F0F0F0FUi32) << 4) | ((bits & 0xF0F0F0F0Ui32) >> 4);
+//     bits = ((bits & 0x00FF00FFUi32) << 8) | ((bits & 0xFF00FF00Ui32) >> 8);
+
+// 	return bits * (1 / static_cast<float>(0x100000000));
+// }
+
+// static fvec2 hammersley(uint32_t num, uint32_t denom) {
+//     return vec2(static_cast<float>(num) / denom, van_der_corput(num));
+// }
+
 static float rand() {
 	static std::mt19937 rng{std::random_device{}()};
 	static std::uniform_real_distribution<float> dist(0, 1);
@@ -56,9 +71,9 @@ static fvec3 reflect(const fvec3 &incident, const fvec3 &normal) {
 	return incident - 2 * dot(normal, incident) * normal;
 }
 
-static std::unordered_map<std::string, std::weak_ptr<image::texture>> texture_cache;
-
 static std::shared_ptr<image::texture> get_cached_texture(const std::filesystem::path &path, bool srgb) {
+	static std::unordered_map<std::string, std::weak_ptr<image::texture>> texture_cache;
+
 	if (path.empty())
 		return nullptr;
 
@@ -78,7 +93,8 @@ static std::shared_ptr<image::texture> get_cached_texture(const std::filesystem:
 renderer::renderer() :
 		resolution(1920, 1080),
 		thread_count(0),
-		sample_count(1) {}
+		sample_count(1),
+		bounce_count(8) {}
 
 void renderer::load_gltf(const std::filesystem::path &path) {
 	// Import file
@@ -304,15 +320,17 @@ void renderer::render(const std::filesystem::path &path) const {
 			pool.schedule([this, &img, y, sample] {
 				for (uint32_t x = 0; x < resolution.x; x++) {
 					uvec2 pixel(x, y);
+					fvec2 aa_offset = fvec2(rand(), rand());
 
-					fvec2 ndc = (fvec2(pixel) / resolution) * 2 - fvec2::one;
+					fvec2 ndc = ((fvec2(pixel) + aa_offset) /
+							resolution) * 2 - fvec2::one;
 					ndc.y = -ndc.y;
 					float ratio = static_cast<float>(resolution.x) / resolution.y;
 
 					ray ray = camera->get_ray(ndc, ratio);
-					fvec3 color = integrate(ray, 4);
+					fvec3 color = integrate(bounce_count, ray);
 
-					color = tonemap_approx_aces(color);
+					color = tonemap_approx_aces(color * 2);
 
 					float r = img->read(pixel, 0);
 					float g = img->read(pixel, 1);
@@ -343,25 +361,16 @@ fvec3 renderer::trace_result::get_normal() const {
 	return tbn * material->get_normal(tex_coord);
 }
 
-fvec3 renderer::integrate(const ray &ray, uint8_t bounces) const {
-	// auto camera_result = trace(ray);
-
-	// if (!camera_result.hit)
-	// 	return fvec3(environment->sample(equirectangular_proj(ray.get_dir())));
-
-	// fvec3 sample_dir = reflect(ray.get_dir(), camera_result.normal);
-	// fvec3 color = fvec3(environment->sample(equirectangular_proj(sample_dir)));
-	// color *= camera_result.material->get_albedo(camera_result.tex_coord);
-
-	// return color;
-
-	if (bounces == 0)
+fvec3 renderer::integrate(uint8_t bounce, const ray &ray) const {
+	if (bounce == 0)
 		return fvec3::zero;
 
 	auto result = trace(ray);
 
 	if (!result.hit)
 		return fvec3(environment->sample(equirectangular_proj(ray.get_dir())));
+
+	// Material properties
 
 	fvec3 normal = result.get_normal();
 	fvec3 outcoming = -ray.get_dir();
@@ -373,37 +382,47 @@ fvec3 renderer::integrate(const ray &ray, uint8_t bounces) const {
 	fvec3 emissive = result.material->get_emissive(result.tex_coord);
 	float ior = result.material->ior;
 
-	// We guess distribution and find a random
-	// direction that satisfies given constraints
-	// (importance sampling)
-	float distribution = max(math::sqrt(rand()), 0.9F);
-	fvec3 incoming = pbr::inverse_distribution_ggx(
-			distribution, normal, outcoming, roughness, rand());
+	// Importance sampling
 
-	float geometry = pbr::geometry_smith(
-			normal, outcoming, incoming, roughness);
+	float spec_prob = pbr::fresnel_schlick(outcoming, reflect(-outcoming, normal), ior);
+	spec_prob = math::max(spec_prob, metallic);
 
-	float fresnel = pbr::fresnel_schlick(outcoming, incoming, ior);
+	fvec2 rand(core::rand(), core::rand());
+	fvec3 incoming = (core::rand() < spec_prob) ?
+			pbr::importance_ggx(rand, normal, outcoming, roughness) :
+			pbr::importance_lambert(rand, normal, outcoming);
 
-	// Microfacet model:
-// L = (F * D * G) / (4 *
-//         dot(normal, outgoing) *
-//         dot(normal, incoming))
+	// Diffuse BRDF
+
+	float diffuse_brdf = pbr::distribution_lambert(normal, incoming);
+
+	// Specular BRDF
+
+	float spec_dist = pbr::distribution_ggx(normal, outcoming, incoming, roughness);
+	float spec_geo  = pbr::geometry_smith(normal, outcoming, incoming, roughness);
 
 	float n_dot_o = dot(normal, outcoming);
 	float n_dot_i = dot(normal, incoming);
 
-	//float diffuse = n_dot_i / math::pi;
-	float specular = (distribution) / (4 * n_dot_o * n_dot_i);
-	
-	//float contribution = diffuse * (1 - metallic)
+	float specular_brdf = (spec_dist * spec_geo) / (4 * n_dot_o * n_dot_i);
+
+	// Final BRDF
+
+	fvec3 surface_brdf = lerp(diffuse_brdf, specular_brdf, metallic) * albedo;
+	fvec3 fresnel_brdf = fvec3(specular_brdf);
+
+	// TODO Provide current IOR for refraction
+	float fresnel = pbr::fresnel_exact(normal, incoming, ior);
+	fvec3 brdf = lerp(surface_brdf, fresnel_brdf, fresnel);
+
+	// Next bounce
 
 	geometry::ray new_ray(
 		result.position + incoming * math::epsilon,
 		incoming
 	);
 
-	return specular * integrate(new_ray, bounces - 1);
+	return brdf * integrate(bounce - 1, new_ray);
 }
 
 renderer::trace_result renderer::trace(const ray &ray) const {

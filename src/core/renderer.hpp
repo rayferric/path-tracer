@@ -16,6 +16,7 @@ public:
 	math::uvec2 resolution;
 	uint32_t thread_count;
 	uint32_t sample_count;
+	uint8_t bounce_count;
 	std::shared_ptr<scene::entity> root;
 	std::shared_ptr<scene::camera> camera;
 	std::shared_ptr<image::texture> environment;
@@ -40,7 +41,7 @@ private:
 		math::fvec3 get_normal() const;
 	};
 
-	math::fvec3 integrate(const geometry::ray &ray, uint8_t bounces) const;
+	math::fvec3 integrate(uint8_t bounce, const geometry::ray &ray) const;
 
 	trace_result trace(const geometry::ray &ray) const;
 };

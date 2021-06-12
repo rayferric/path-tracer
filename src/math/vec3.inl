@@ -328,6 +328,14 @@ vec3<Ret> mod(const vec3<X> &x, const vec3<Y> &y) {
 			mod(x.z, y.z));
 }
 
+template<scalar X, scalar Power, scalar Ret>
+vec3<Ret> pow(const vec3<X> &x, const vec3<Power> &power) {
+	return vec3<Ret>(
+			math::pow(x.x, power.x),
+			math::pow(x.y, power.y),
+			math::pow(x.z, power.z));
+}
+
 template<scalar X>
 vec3<X> saturate(const vec3<X> &x) {
 	return vec3<X>(

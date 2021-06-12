@@ -6,9 +6,9 @@ namespace core {
 
 math::fvec3 material::get_normal(const math::fvec2 &coord) const {
 	if (normal_tex)
-		return normal_tex->sample(coord);
+		return fvec3(normal_tex->sample(coord)) * 2 - fvec3::one;
 	else
-		return fvec3(0.5F, 0.5F, 1);
+		return fvec3::backward;
 }
 
 fvec3 material::get_albedo(const fvec2 &coord) const {
