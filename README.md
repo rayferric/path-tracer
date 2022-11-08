@@ -1,6 +1,6 @@
 # Path Tracer
 
-Path tracing software that can generate life-like images from GLTF scenes.
+🌇 Path tracing software that can generate life-like images from GLTF scenes.
 
 ## Features
 
@@ -14,25 +14,17 @@ Path tracing software that can generate life-like images from GLTF scenes.
 ## Gallery
 
 <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center;">
-	<div style="display: flex; flex-direction: row; flex-wrap: wrap; flex-shrink: 1;">
-		<div style="display: flex; flex-direction: column;">
-			<img style="width: 300px; margin: 20px;" src="./renders/porsche.denoised.png" />
-			<img style="width: 300px; margin: 20px;" src="./renders/cornell-box.denoised.png" />
-		</div>
-		<div style="display: flex; flex-direction: column;">
-			<img style="width: 300px; margin: 20px;" src="./renders/sponza-alt.denoised.png" />
-			<img style="width: 300px; margin: 20px;" src="./renders/jack-of-blades.denoised.png" />
-		</div>
+	<div style="display: flex; flex-direction: column;">
+		<img style="width: 400px; margin: 20px;" src="./renders/porsche.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/cornell-box.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sponza-alt.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/jack-of-blades.denoised.png" />
 	</div>
-	<div style="display: flex; flex-direction: row; flex-wrap: wrap; flex-shrink: 1;">
-		<div style="display: flex; flex-direction: column;">
-			<img style="width: 300px; margin: 20px;" src="./renders/dragon.denoised.png" />
-			<img style="width: 300px; margin: 20px;" src="./renders/sponza.denoised.png" />
-		</div>
-		<div style="display: flex; flex-direction: column;">
-			<img style="width: 300px; margin: 20px;" src="./renders/sci-fi-helmet.denoised.png" />
-			<img style="width: 300px; margin: 20px;" src="./renders/cerberus.denoised.png" />
-		</div>
+	<div style="display: flex; flex-direction: column;">
+		<img style="width: 400px; margin: 20px;" src="./renders/dragon.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sponza.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sci-fi-helmet.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/cerberus.denoised.png" />
 	</div>
 </div>
 
