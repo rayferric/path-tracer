@@ -179,7 +179,7 @@ vec2<T> &vec2<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+template<scalar L, scalar R, typename Ret = std::common_type_t<L, R>>
 vec2<Ret> operator*(L lhs, const vec2<R> &rhs) {
 	return vec2<Ret>(lhs * rhs.x, lhs * rhs.y);
 }
@@ -238,6 +238,13 @@ vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, Weight weight) {
 	return vec2<Ret>(
 			lerp(from.x, to.x, weight),
 			lerp(from.y, to.y, weight));
+}
+
+template<scalar From, scalar To, scalar Weight, scalar Ret>
+vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, const vec2<Weight> &weight) {
+	return vec2<Ret>(
+			lerp(from.x, to.x, weight.x),
+			lerp(from.y, to.y, weight.y));
 }
 
 template<scalar A, scalar B, scalar Ret>

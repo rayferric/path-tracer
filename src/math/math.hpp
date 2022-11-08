@@ -54,7 +54,7 @@ inline X abs(X x);
 
 template<scalar A, scalar B,
 		scalar Epsilon = decltype(epsilon)>
-bool is_approx(A a, B b, Epsilon epsilon = epsilon);
+bool is_approx(A a, B b, Epsilon epsilon = math::epsilon);
 
 // Trigonometry
 

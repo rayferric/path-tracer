@@ -34,7 +34,7 @@ struct mesh {
 
 	void build_kd_tree(bool use_sah = true, uint8_t max_depth = 25);
 
-	intersection intersect(const geometry::ray &ray) const;
+	intersection intersect(const geometry::ray &ray, uint8_t visualize_kd_tree_depth = 0) const;
 };
 
 }

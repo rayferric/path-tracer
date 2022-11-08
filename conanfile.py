@@ -3,7 +3,7 @@ from conans import ConanFile, CMake
 
 class ConanFile(ConanFile):
 	settings = "os", "compiler", "build_type", "arch"
-	requires = "assimp/5.0.1"
+	requires = "assimp/5.2.2"
 	generators = "cmake_find_package"
 	default_options = {
 		'assimp:shared': True

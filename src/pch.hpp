@@ -17,7 +17,9 @@
 #include <memory>
 #include <numbers>
 #include <numeric>
+#include <queue>
 #include <random>
+#include <regex>
 #include <sstream>
 #include <stack>
 #include <stdexcept>

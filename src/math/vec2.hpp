@@ -152,6 +152,10 @@ template<scalar From, scalar To, scalar Weight,
 		scalar Ret = std::common_type_t<From, To, Weight>>
 vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, Weight weight);
 
+template<scalar From, scalar To, scalar Weight,
+		scalar Ret = std::common_type_t<From, To, Weight>>
+vec2<Ret> lerp(const vec2<From> &from, const vec2<To> &to, const vec2<Weight> &weight);
+
 template<scalar A, scalar B,
 		scalar Ret = std::common_type_t<A, B>>
 vec2<Ret> max(const vec2<A> &a, const vec2<B> &b);

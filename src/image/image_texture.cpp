@@ -41,7 +41,7 @@ fvec4 image_texture::sample(const fvec2 &coord) const {
 }
 
 fvec4 image_texture::read_pixel(const uvec2 &pixel) const {
-	fvec4 color;
+	fvec4 color = fvec4::one;
 
 	switch (img->get_channel_count()) {
 	case 4:

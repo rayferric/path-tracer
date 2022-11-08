@@ -34,7 +34,7 @@ std::shared_ptr<T> entity::remove_component() {
 	components.erase(it);
 	component_index.erase(typeid(T));
 
-	component->parent_entity = nullptr;
+	component->parent_entity.reset();
 	return std::static_pointer_cast<T>(component);
 }
 

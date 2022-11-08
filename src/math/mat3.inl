@@ -200,8 +200,8 @@ mat3<T> &mat3<T>::operator/=(U rhs) {
 
 // Scalar + Matrix
 
-template<scalar L, scalar R>
-auto operator*(L lhs, const mat3<R> &rhs) {
+template<scalar L, scalar R, typename Ret = std::common_type_t<L, R>>
+mat3<Ret> operator*(L lhs, const mat3<R> &rhs) {
 	return mat3(
 		lhs * rhs.x.x, lhs * rhs.x.y, lhs * rhs.x.z,
 		lhs * rhs.y.x, lhs * rhs.y.y, lhs * rhs.y.z,

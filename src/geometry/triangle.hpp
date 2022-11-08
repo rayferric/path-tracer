@@ -13,10 +13,7 @@ struct triangle {
 		bool has_hit() const;
 	};
 
-	union {
-		struct { math::fvec3 a, b, c; };
-		math::fvec3 data[3];
-	};
+	math::fvec3 a, b, c;
 
 	triangle(const math::fvec3 &a,
 			 const math::fvec3 &b,

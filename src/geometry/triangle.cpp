@@ -17,11 +17,29 @@ triangle::triangle(
 		) : a(a), b(b), c(c) {}
 
 math::fvec3 &triangle::operator[](size_t index) {
-	return data[index];
+	switch (index) {
+	case 0:
+		return a;
+	case 1:
+		return b;
+	case 2:
+		return c;
+	default:
+		throw std::out_of_range("Triangle index out of range.");
+	}
 }
 
 const math::fvec3 &triangle::operator[](size_t index) const {
-	return data[index];
+	switch (index) {
+	case 0:
+		return a;
+	case 1:
+		return b;
+	case 2:
+		return c;
+	default:
+		throw std::out_of_range("Triangle index out of range.");
+	}
 }
 
 // Geometric solution

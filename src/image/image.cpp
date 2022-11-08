@@ -52,6 +52,8 @@ std::shared_ptr<image> image::load(const std::filesystem::path &path, bool srgb)
 }
 
 void image::save(const std::filesystem::path &path) const {
+	std::filesystem::create_directories(path.parent_path());
+	
 	std::string ext = path.extension().string();
 
 	if (ext == ".png") {

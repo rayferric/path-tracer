@@ -1,7 +1,6 @@
 #include "core/mesh.hpp"
 
 #include "geometry/triangle.hpp"
-#include "threading/thread_pool.hpp"
 
 using namespace geometry;
 using namespace math;
@@ -9,8 +8,6 @@ using namespace math;
 namespace core {
 
 namespace kd_tree_builder {
-
-// threading::thread_pool pool;
 
 static kd_tree_node *init_leaf(
 		std::vector<triangle> &&triangles,
@@ -131,7 +128,7 @@ static kd_tree_node *init_node_median(
 }
 
 // Alternative to init_node_median
-static kd_tree_node *init_node_sah(
+kd_tree_node *init_node_sah(
 		aabb &&aabb,
 		std::vector<triangle> &&triangles,
 		std::vector<uint32_t> &&indices,
@@ -162,7 +159,7 @@ static kd_tree_node *init_node_sah(
 			bounds.emplace_back(end, false);
 		}
 		
-		std::sort(std::execution::par_unseq, bounds.begin(), bounds.end(),
+		std::sort(bounds.begin(), bounds.end(),
 				[] (auto &x, auto &y) { return get<0>(x) < get<0>(y); });
 		
 		float split;
@@ -247,161 +244,6 @@ static kd_tree_node *init_node_sah(
 		return init_leaf(std::move(triangles), std::move(indices));
 }
 
-/*
-
-// DO NOT USE
-static void init_node_sah_parallel_bad(
-		std::shared_ptr<kd_tree_node> out_ptr,
-		aabb &&aabb,
-		std::vector<triangle> &&triangles,
-		std::vector<uint32_t> &&indices,
-		uint8_t depth) {
-	// Create leaf node once
-	// we've reached maximum depth
-	if (depth == 0) {
-		out_ptr.reset(init_leaf(std::move(triangles), std::move(indices)));
-		return;
-	}
-
-	fvec3 widths = aabb.max - aabb.min;
-	
-	float base_cost = triangles.size() * aabb.get_surface_area();
-	std::atomic<float> best_cost = base_cost;
-	std::atomic_uint8_t best_axis;
-	std::atomic<float> best_split;
-	
-	std::vector<std::tuple<float, bool>> bounds(triangles.size() * 2);
-	
-	for (uint8_t axis = 0; axis < 3; axis++) {
-		std::atomic_size_t index_counter = 0;
-		std::for_each(std::execution::par_unseq, triangles.begin(), triangles.end(),
-				[&index_counter, axis, &bounds](const geometry::triangle &triangle) {
-			size_t index = index_counter++;
-
-			float start = math::min(triangle.a[axis], triangle.b[axis], triangle.c[axis]);
-			float end = math::max(triangle.a[axis], triangle.b[axis], triangle.c[axis]);
-
-			bounds[index * 2]     = std::make_tuple(start, true);
-			bounds[index * 2 + 1] = std::make_tuple(end, false);
-		});
-		
-		std::sort(std::execution::par_unseq, bounds.begin(), bounds.end(),
-				[] (auto &x, auto &y) { return get<0>(x) < get<0>(y); });
-		
-		float split;
-		uint32_t lcount = 0;
-		uint32_t rcount = triangles.size();
-		
-		for (size_t i = 0; i <= bounds.size(); i++) {
-			if (i == 0)
-				split = get<0>(bounds.front()) - math::epsilon;
-			else if (i == bounds.size()) {
-				// Last event is always END
-				rcount--;
-				split = get<0>(bounds.back()) + math::epsilon;
-			} else {
-				auto &prev_bound = bounds[i - 1];
-				auto &next_bound = bounds[i];
-
-				if (get<1>(prev_bound))
-					lcount++;
-				else
-					rcount--;
-
-				if (get<0>(prev_bound) == get<0>(next_bound))
-					continue;
-
-				split = (get<0>(prev_bound) + get<0>(next_bound)) * 0.5F;
-			}
-
-			// Accumulate events until we enter the AABB
-			if (split <= aabb.min[axis])
-				continue;
-
-			if (split >= aabb.max[axis])
-				break;
-
-			auto [laabb, raabb] = split_aabb(
-					aabb, axis, split);
-
-			float cost = lcount * laabb.get_surface_area()
-					   + rcount * raabb.get_surface_area();
-
-			if (cost < best_cost) {
-				best_cost = cost;
-				best_axis = axis;
-				best_split = split;
-			}
-		}
-	}
-	
-	if (best_cost < base_cost) {
-		auto node = new kd_tree_branch;
-		
-		node->axis = best_axis;
-		node->split = best_split;
-
-		auto [laabb, raabb] = split_aabb(aabb,
-					node->axis, node->split);
-
-		auto [ltriangles, rtriangles,
-				lindices, rindices] =
-				split_triangles(triangles, indices,
-				node->axis, node->split);
-
-		if (ltriangles.size() > 0) {
-			if (ltriangles.size() > 1000) {
-				pool.schedule([&node,
-						laabb      = std::move(laabb),
-						ltriangles = std::move(ltriangles),
-						lindices   = std::move(lindices), depth]() mutable {
-					kd_tree_builder::init_node_sah_parallel_bad(
-							node->left,
-							std::move(laabb),
-							std::move(ltriangles),
-							std::move(lindices),
-							depth - 1);
-				});
-			} else {
-				kd_tree_builder::init_node_sah_parallel_bad(
-						node->left,
-						std::move(laabb),
-						std::move(ltriangles),
-						std::move(lindices),
-						depth - 1);
-			}
-		}
-
-		if (rtriangles.size() > 0) {
-			if (rtriangles.size() > 1000) {
-				pool.schedule([&node,
-						raabb      = std::move(raabb),
-						rtriangles = std::move(rtriangles),
-						rindices   = std::move(rindices), depth]() mutable {
-					kd_tree_builder::init_node_sah_parallel_bad(
-							node->right,
-							std::move(raabb),
-							std::move(rtriangles),
-							std::move(rindices),
-							depth - 1);
-				});
-			} else {
-				kd_tree_builder::init_node_sah_parallel_bad(
-						node->right,
-						std::move(raabb),
-						std::move(rtriangles),
-						std::move(rindices),
-						depth - 1);
-			}
-		}
-
-		out_ptr.reset(node);
-	} else
-		out_ptr.reset(init_leaf(std::move(triangles), std::move(indices)));
-}
-
-*/
-
 }
 
 bool mesh::intersection::has_hit() const {
@@ -412,6 +254,9 @@ void mesh::recalculate_aabb() {
 	aabb.clear();
 	for (vertex &v : vertices)
 		aabb.add(v.position);
+
+	aabb.min -= fvec3(math::epsilon);
+	aabb.max += fvec3(math::epsilon);
 }
 
 void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
@@ -433,7 +278,7 @@ void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
 	std::iota(indices.begin(), indices.end(), 0);
 
 	std::cout << "Building kD tree..." << std::endl;
-
+	
 	// Start executing initial job
 	if (use_sah) {
 		kd_tree.reset(kd_tree_builder::init_node_sah(
@@ -450,20 +295,39 @@ void mesh::build_kd_tree(bool use_sah, uint8_t max_depth) {
 	}
 }
 
-mesh::intersection mesh::intersect(const ray &ray) const {
+mesh::intersection mesh::intersect(const ray &ray, uint8_t visualize_kd_tree_depth) const {
 	auto result = aabb.intersect(ray);
 	if (!result.has_hit())
 		return {};
 
-	std::stack<std::tuple<const kd_tree_node *, float, float>> stack;
-	stack.push(std::make_tuple(kd_tree.get(), result.near, result.far));
+	// uint8_t depth is only used for tree visualization 
+	std::stack<std::tuple<const kd_tree_node *, float, float, uint8_t>> stack;
+	stack.push(std::make_tuple(kd_tree.get(), result.near, result.far, 1));
 
 	while (!stack.empty()) {
-		auto [node, min_dist, max_dist] = stack.top();
+		auto [node, min_dist, max_dist, depth] = stack.top();
 		stack.pop();
 
 		// Explore down the tree until we reach a leaf
 		while (node && typeid(*node) == typeid(kd_tree_branch)) {
+			if (depth++ == visualize_kd_tree_depth) {
+				size_t ptr_val = reinterpret_cast<size_t>(node);
+				std::mt19937 rng{ptr_val};
+				float hue = std::uniform_real_distribution<float>{0, 1}(rng);
+
+				fvec3 color = math::saturate(fvec3(
+					math::abs(hue * 6 - 3 ) - 1,
+					2 - math::abs(hue * 6 - 2),
+					2 - math::abs(hue * 6 - 4)
+				));
+
+				return {
+					min_dist,
+					color, // Random color instead of barycentric coordinates
+					static_cast<uint32_t>(-1) // No index
+				};
+			}
+
 			auto branch = static_cast<const kd_tree_branch *>(node);
 
 			// Distance to the split plane
@@ -495,7 +359,7 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 			// Otherwise we've hit them both
 			else {
 				if (second)
-					stack.push(std::make_tuple(second, split_dist, max_dist));
+					stack.push(std::make_tuple(second, split_dist, max_dist, depth));
 
 				node = first;
 				max_dist = split_dist;
@@ -523,6 +387,9 @@ mesh::intersection mesh::intersect(const ray &ray) const {
 
 		if (!nearest_hit.has_hit())
 			continue;
+
+		if (visualize_kd_tree_depth != 0)
+			return {};
 
 		return {
 			nearest_hit.distance,

@@ -61,7 +61,7 @@ aabb::intersection aabb::intersect(const ray &ray) const {
 	// if we're inside the box
 	//
 	// Far is negative when intersection
-	// occured behind the ray
+	// occurred behind the ray
 	return { near, far };
 }
 

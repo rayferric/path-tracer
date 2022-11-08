@@ -37,6 +37,9 @@ struct vec4 {
 	template<scalar U>
 	constexpr vec4(const vec3<U> &other);
 
+	template<scalar U, scalar V>
+	constexpr vec4(const vec3<U> &other, V w);
+
 	template<scalar U>
 	constexpr vec4(const vec2<U> &other);
 
@@ -168,6 +171,10 @@ vec4<X> fract(const vec4<X> &x);
 template<scalar From, scalar To, scalar Weight,
 		scalar Ret = std::common_type_t<From, To, Weight>>
 vec4<Ret> lerp(const vec4<From> &from, const vec4<To> &to, Weight weight);
+
+template<scalar From, scalar To, scalar Weight,
+		scalar Ret = std::common_type_t<From, To, Weight>>
+vec4<Ret> lerp(const vec4<From> &from, const vec4<To> &to, const vec4<Weight> &weight);
 
 template<scalar A, scalar B,
 		scalar Ret = std::common_type_t<A, B>>

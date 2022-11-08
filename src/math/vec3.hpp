@@ -171,12 +171,20 @@ vec3<Ret> refract(const vec3<Incident> &incident,
 template<scalar X>
 vec3<X> abs(const vec3<X> &x);
 
+template<scalar X, scalar Min, scalar Max,
+		scalar Ret = std::common_type_t<X, Min, Max>>
+vec3<Ret> clamp(const vec3<X> &x, const vec3<Min> &min, const vec3<Max> &max);
+
 template<floating_point X>
 vec3<X> fract(const vec3<X> &x);
 
 template<scalar From, scalar To, scalar Weight,
 		scalar Ret = std::common_type_t<From, To, Weight>>
 vec3<Ret> lerp(const vec3<From> &from, const vec3<To> &to, Weight weight);
+
+template<scalar From, scalar To, scalar Weight,
+		scalar Ret = std::common_type_t<From, To, Weight>>
+vec3<Ret> lerp(const vec3<From> &from, const vec3<To> &to, const vec3<Weight> &weight);
 
 template<scalar A, scalar B,
 		scalar Ret = std::common_type_t<A, B>>

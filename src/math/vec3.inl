@@ -197,7 +197,7 @@ vec3<T> &vec3<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+template<scalar L, scalar R, typename Ret = std::common_type_t<L, R>>
 vec3<Ret> operator*(L lhs, const vec3<R> &rhs) {
 	return vec3<Ret>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
 }
@@ -279,6 +279,14 @@ vec3<X> abs(const vec3<X> &x) {
 	return vec3<X>(abs(x.x), abs(x.y), abs(x.z));
 }
 
+template<scalar X, scalar Min, scalar Max, scalar Ret>
+vec3<Ret> clamp(const vec3<X> &x, const vec3<Min> &min, const vec3<Max> &max) {
+	return vec3<Ret>(
+			clamp(x.x, min.x, max.x),
+			clamp(x.y, min.y, max.y),
+			clamp(x.z, min.z, max.z));
+}
+
 template<floating_point X>
 vec3<X> fract(const vec3<X> &x) {
 	return vec3<X>(fract(x.x), fract(x.y), fract(x.z));
@@ -290,6 +298,14 @@ vec3<Ret> lerp(const vec3<From> &from, const vec3<To> &to, Weight weight) {
 			lerp(from.x, to.x, weight),
 			lerp(from.y, to.y, weight),
 			lerp(from.z, to.z, weight));
+}
+
+template<scalar From, scalar To, scalar Weight, scalar Ret>
+vec3<Ret> lerp(const vec3<From> &from, const vec3<To> &to, const vec3<Weight> &weight) {
+	return vec3<Ret>(
+			lerp(from.x, to.x, weight.x),
+			lerp(from.y, to.y, weight.y),
+			lerp(from.z, to.z, weight.z));
 }
 
 template<scalar A, scalar B, scalar Ret>

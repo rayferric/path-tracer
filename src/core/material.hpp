@@ -15,6 +15,7 @@ public:
 	float metallic_fac = 1;
 	math::fvec3 emissive_fac = 1;
 	float ior = 1.33F;
+	bool shadow_catcher = false;
 
 	std::shared_ptr<image::texture>
 			normal_tex    = nullptr,

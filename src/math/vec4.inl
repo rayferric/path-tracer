@@ -54,6 +54,11 @@ constexpr vec4<T>::vec4(const vec3<U> &other) :
 		x(other.x), y(other.y), z(other.z), w(0) {}
 
 template<scalar T>
+template<scalar U, scalar V>
+constexpr vec4<T>::vec4(const vec3<U> &other, V w) :
+		x(other.x), y(other.y), z(other.z), w(w) {}
+
+template<scalar T>
 template<scalar U>
 constexpr vec4<T>::vec4(const vec2<U> &other) :
 		x(other.x), y(other.y), z(0), w(0) {}
@@ -193,7 +198,7 @@ vec4<T> &vec4<T>::operator/=(const vec4<U> &rhs) {
 template<scalar T>
 template<scalar U, scalar Ret>
 vec4<Ret> vec4<T>::operator*(U rhs) const {
-	return vec4<Ret>(x * rhs, y * rhs, z * rhs, w * rhs.w);
+	return vec4<Ret>(x * rhs, y * rhs, z * rhs, w * rhs);
 }
 
 template<scalar T>
@@ -216,7 +221,7 @@ vec4<T> &vec4<T>::operator/=(U rhs) {
 
 // Scalar + Vector
 
-template<scalar L, scalar R, scalar Ret = std::common_type_t<L, R>>
+template<scalar L, scalar R, typename Ret = std::common_type_t<L, R>>
 vec4<Ret> operator*(L lhs, const vec4<R> &rhs) {
 	return vec4<Ret>(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w);
 }
@@ -277,6 +282,15 @@ vec4<Ret> lerp(const vec4<From> &from, const vec4<To> &to, Weight weight) {
 			lerp(from.y, to.y, weight),
 			lerp(from.z, to.z, weight),
 			lerp(from.w, to.w, weight));
+}
+
+template<scalar From, scalar To, scalar Weight, scalar Ret>
+vec4<Ret> lerp(const vec4<From> &from, const vec4<To> &to, const vec4<Weight> &weight) {
+	return vec4<Ret>(
+			lerp(from.x, to.x, weight.x),
+			lerp(from.y, to.y, weight.y),
+			lerp(from.z, to.z, weight.z),
+			lerp(from.w, to.w, weight.w));
 }
 
 template<scalar A, scalar B, scalar Ret>

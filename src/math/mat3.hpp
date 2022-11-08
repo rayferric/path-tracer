@@ -100,8 +100,8 @@ struct mat3 {
 
 	// Scalar + Matrix
 
-	template<scalar L, scalar R>
-	friend auto operator*(L lhs, const mat3<R> &rhs);
+	template<scalar L, scalar R, scalar Ret>
+	friend mat3<Ret> operator*(L lhs, const mat3<R> &rhs);
 
 	// Matrix + Vector
 

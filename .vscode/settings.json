@@ -92,7 +92,11 @@
 		"stack": "cpp",
 		"execution": "cpp",
 		"queue": "cpp",
-		"span": "cpp"
+		"span": "cpp",
+		"shared_mutex": "cpp",
+		"cfenv": "cpp",
+		"variant": "cpp",
+		"regex": "cpp"
 	},
 	"cmake.debugConfig": {
 		"cwd": "${workspaceFolder}"

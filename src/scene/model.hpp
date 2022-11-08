@@ -33,7 +33,7 @@ public:
 
 	void recalculate_aabb();
 
-	intersection intersect(const geometry::ray &ray) const;
+	intersection intersect(const geometry::ray &ray, uint8_t visualize_kd_tree_depth = 0) const;
 };
 
 }

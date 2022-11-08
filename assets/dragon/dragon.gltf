@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.5.17",
+        "generator" : "Khronos glTF Blender I/O v3.3.32",
         "version" : "2.0"
     },
     "scene" : 0,
@@ -9,8 +9,7 @@
             "name" : "Scene",
             "nodes" : [
                 0,
-                2,
-                3
+                1
             ]
         }
     ],
@@ -26,43 +25,17 @@
         },
         {
             "camera" : 0,
-            "name" : "Camera.001_Orientation",
+            "name" : "Camera",
             "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                1
-            ],
-            "name" : "Camera.001",
-            "rotation" : [
-                0.5150313377380371,
-                -0.17998015880584717,
-                0.1116003468632698,
-                0.830599308013916
+                -0.2198522537946701,
+                -0.21418525278568268,
+                -0.05620986968278885,
+                0.950068473815918
             ],
             "translation" : [
-                -1.7778713703155518,
-                2.1561295986175537,
-                3.4369661808013916
-            ]
-        },
-        {
-            "mesh" : 1,
-            "name" : "Plane",
-            "scale" : [
-                1.4271879196166992,
-                1.4271879196166992,
-                1.4271879196166992
-            ],
-            "translation" : [
-                0,
-                -0.5246402025222778,
-                -0.20528283715248108
+                -1.644078016281128,
+                2.0029208660125732,
+                3.1533069610595703
             ]
         }
     ],
@@ -70,8 +43,8 @@
         {
             "name" : "Camera.001",
             "perspective" : {
-                "aspectRatio" : 1.7777777777777777,
-                "yfov" : 0.513038796505747,
+                "aspectRatio" : 1,
+                "yfov" : 0.6108652353286743,
                 "zfar" : 1000,
                 "znear" : 0.10000000149011612
             },
@@ -84,26 +57,12 @@
             "name" : "dragon",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.800000011920929,
-                    0.800000011920929,
-                    0.800000011920929,
+                    0.8000000715255737,
+                    0.41419506072998047,
+                    0.16755585372447968,
                     1
                 ],
                 "roughnessFactor" : 0.30000001192092896
-            }
-        },
-        {
-            "doubleSided" : true,
-            "name" : "Material",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    1,
-                    0.03251737356185913,
-                    0.03251737356185913,
-                    1
-                ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.800000011920929
             }
         }
     ],
@@ -119,20 +78,6 @@
                     },
                     "indices" : 3,
                     "material" : 0
-                }
-            ]
-        },
-        {
-            "name" : "Plane",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 4,
-                        "NORMAL" : 5,
-                        "TEXCOORD_0" : 6
-                    },
-                    "indices" : 7,
-                    "material" : 1
                 }
             ]
         }
@@ -171,87 +116,37 @@
             "componentType" : 5125,
             "count" : 2614242,
             "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 4,
-            "componentType" : 5126,
-            "count" : 4,
-            "max" : [
-                1,
-                0,
-                1
-            ],
-            "min" : [
-                -1,
-                0,
-                -1
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 5,
-            "componentType" : 5126,
-            "count" : 4,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 6,
-            "componentType" : 5126,
-            "count" : 4,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 7,
-            "componentType" : 5123,
-            "count" : 6,
-            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
             "byteLength" : 6253224,
-            "byteOffset" : 0
+            "byteOffset" : 0,
+            "target" : 34962
         },
         {
             "buffer" : 0,
             "byteLength" : 6253224,
-            "byteOffset" : 6253224
+            "byteOffset" : 6253224,
+            "target" : 34962
         },
         {
             "buffer" : 0,
             "byteLength" : 4168816,
-            "byteOffset" : 12506448
+            "byteOffset" : 12506448,
+            "target" : 34962
         },
         {
             "buffer" : 0,
             "byteLength" : 10456968,
-            "byteOffset" : 16675264
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 48,
-            "byteOffset" : 27132232
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 48,
-            "byteOffset" : 27132280
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 32,
-            "byteOffset" : 27132328
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 12,
-            "byteOffset" : 27132360
+            "byteOffset" : 16675264,
+            "target" : 34963
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 27132372,
+            "byteLength" : 27132232,
             "uri" : "dragon.bin"
         }
     ]

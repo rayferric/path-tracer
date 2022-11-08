@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
-project(raytracer VERSION 1.0.0 LANGUAGES CXX)
+project(PathTracer VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CXX_STANDARD_REQUIRED ON)
-
-# Set output directory to "/bin"
+# Set output directory to "bin"
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
@@ -18,21 +15,27 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/vendor/stb")
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 find_package(assimp)
 
-# Define "raytracer" target
+# Define "PathTracer" target
 file(GLOB_RECURSE TARGET_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(raytracer ${TARGET_SOURCES})
+add_executable(PathTracer ${TARGET_SOURCES})
 
-target_include_directories(raytracer PRIVATE
+set_target_properties(PathTracer PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    OUTPUT_NAME "path-tracer"
+)
+
+target_include_directories(PathTracer PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-target_link_libraries(raytracer stb assimp::assimp)
+target_link_libraries(PathTracer stb assimp::assimp)
 
-target_precompile_headers(raytracer PRIVATE
+target_precompile_headers(PathTracer PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp"
 )
