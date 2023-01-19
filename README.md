@@ -15,16 +15,16 @@
 
 <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center;">
 	<div style="display: flex; flex-direction: column;">
-		<img style="width: 400px; margin: 20px;" src="./renders/porsche.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/cornell-box.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/sponza-alt.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/jack-of-blades.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/porsche.preview.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/cornell-box.preview.jpg" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sponza-alt.preview.jpg" />
+		<img style="width: 400px; margin: 20px;" src="./renders/jack-of-blades.preview.png" />
 	</div>
 	<div style="display: flex; flex-direction: column;">
-		<img style="width: 400px; margin: 20px;" src="./renders/dragon.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/sponza.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/sci-fi-helmet.denoised.png" />
-		<img style="width: 400px; margin: 20px;" src="./renders/cerberus.denoised.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/dragon.preview.png" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sponza.preview.jpg" />
+		<img style="width: 400px; margin: 20px;" src="./renders/sci-fi-helmet.preview.jpg" />
+		<img style="width: 400px; margin: 20px;" src="./renders/cerberus.preview.png" />
 	</div>
 </div>
 
