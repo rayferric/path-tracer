@@ -1,6 +1,12 @@
 namespace math {
 
 template<scalar T>
+const mat3<T> mat3<T>::zero(0);
+
+template<scalar T>
+const mat3<T> mat3<T>::identity(1);
+
+template<scalar T>
 mat3<T>::mat3() : mat3(1) {}
 
 template<scalar T>

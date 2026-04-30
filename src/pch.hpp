@@ -30,10 +30,18 @@
 #include <unordered_map>
 #include <vector>
 
+#define GLFW_INCLUDE_NONE
+
+#include <GLFW/glfw3.h>
+#include <glad/gl.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <stb/stb_image.h>
+#include <stb/stb_image_write.h>
+#include <tinygltf/tiny_gltf.h>
+
 #include <assimp/Importer.hpp>
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-
-#include <stb/stb_image.h>
-#include <stb/stb_image_write.h>

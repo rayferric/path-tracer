@@ -1,5 +1,6 @@
 #pragma once
 
+#include "image/image.hpp"
 #include "pch.hpp"
 
 #include "core/material.hpp"
@@ -32,6 +33,12 @@ public:
 
 	void load_gltf(
 			const std::filesystem::path &path);
+
+	std::shared_ptr<image::image> init_hdr_accum() const;
+
+	std::shared_ptr<image::image> tonemap_output(const std::shared_ptr<image::image> &hdr) const;
+
+	void render_sample(const std::shared_ptr<image::image> &hdr, uint32_t sample_idx) const;
 
 	void render(const std::filesystem::path &path) const;
 

@@ -103,6 +103,20 @@ void image::write(const uvec2 &pos, uint32_t channel, float value) {
 		data[index] = static_cast<uint8_t>(value * 255 + 0.5F);
 }
 
+math::fvec4 image::read4(const math::uvec2 &pos) const {
+	fvec4 value;
+
+	for (uint32_t c = 0; c < channel_count; c++)
+		value[c] = read(pos, c);
+
+	return value;
+}
+
+void image::write4(const math::uvec2 &pos, const math::fvec4 &value) {
+	for (uint32_t c = 0; c < channel_count; c++)
+		write(pos, c, value[c]);
+}
+
 const math::uvec2 &image::get_size() const {
 	return size;
 }
@@ -117,6 +131,10 @@ bool image::is_hdr() const {
 
 bool image::is_srgb() const {
 	return srgb;
+}
+
+const std::vector<uint8_t> &image::get_data() const {
+	return data;
 }
 
 }
