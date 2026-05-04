@@ -10,6 +10,7 @@
 #include <cstring>
 #include <execution>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <future>
 #include <iomanip>
@@ -31,17 +32,22 @@
 #include <vector>
 
 #define GLFW_INCLUDE_NONE
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/color_space.hpp>
+#include <glm/gtx/orthonormalize.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <portable-file-dialogs.h>
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 #include <tinygltf/tiny_gltf.h>
 
-#include <assimp/Importer.hpp>
-#include <assimp/pbrmaterial.h>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+#include "./cuda_commons/cuda_commons.hpp"

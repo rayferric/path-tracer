@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
 project(path_tracer VERSION 1.0.0 LANGUAGES CXX)
 
+option(ENABLE_CUDA "Enable CUDA support" ON)
+
+if(ENABLE_CUDA)
+    enable_language(CUDA)
+endif()
+
 # Add third-party subdirectories
 add_subdirectory("vendor/glad")
 add_subdirectory("vendor/glfw")
+add_subdirectory("vendor/glm")
 add_subdirectory("vendor/imgui")
+add_subdirectory("vendor/portable-file-dialogs")
 add_subdirectory("vendor/stb")
 add_subdirectory("vendor/tinygltf")
 
@@ -14,6 +22,12 @@ file(GLOB_RECURSE TARGET_SOURCES CONFIGURE_DEPENDS
     "src/*.inl"
     "src/*.cpp"
 )
+
+if(ENABLE_CUDA)
+    file(GLOB_RECURSE CUDA_SOURCES CONFIGURE_DEPENDS "src/*.cu")
+    list(APPEND TARGET_SOURCES ${CUDA_SOURCES})
+endif()
+
 add_executable(${PROJECT_NAME} ${TARGET_SOURCES})
 target_precompile_headers(${PROJECT_NAME} PRIVATE
 	"src/pch.hpp"
@@ -24,12 +38,19 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-	"src"
-)
+if(ENABLE_CUDA)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_CUDA)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_ARCHITECTURES 75
+    )
+    # suppress NVCC warnings caused by GLM 
+    target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=20012>)
+    target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
+endif()
 
-find_package(assimp REQUIRED)
 target_link_libraries(${PROJECT_NAME}
-    glad glfw imgui stb tinygltf assimp
+    glad glfw glm imgui portable_file_dialogs stb tinygltf
 )
-
