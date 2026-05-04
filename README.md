@@ -1,6 +1,6 @@
 # Path Tracer
 
-CUDA path tracer with life-like render quality
+Interactive CUDA path tracer with PBR quality
 
 ## Features
 
