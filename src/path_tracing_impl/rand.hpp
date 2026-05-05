@@ -31,7 +31,7 @@ CUDA_CALLABLE inline float rand_float(rng_state &rng) {
 CUDA_CALLABLE inline glm::fvec3 rand_cone_dir(rng_state &rng, glm::fvec3 normal, float cos_theta) {
 	// random vector in a Z-oriented cone
 
-	float phi = rand_float(rng) * 2.0f * (float)M_PI;
+	float phi = rand_float(rng) * 2.0f * std::numbers::pi_v<float>;
 	float sin_theta = sqrt(1 - cos_theta * cos_theta);
 
 	glm::fvec3 cone_vec(std::cos(phi) * sin_theta, std::sin(phi) * sin_theta, cos_theta);

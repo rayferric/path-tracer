@@ -95,7 +95,7 @@ CUDA_CALLABLE inline glm::fvec3 calc_tangent(const glm::fvec3 &v0, const glm::fv
 }
 
 CUDA_CALLABLE inline hit_info intersect_scene(const scene_data &scn, glm::fvec3 pos, glm::fvec3 dir) {
-	hit_info closest_hit = {INFINITY, {}, {}, {}, {}, 0, false};
+	hit_info closest_hit = {std::numeric_limits<float>::infinity(), {}, {}, {}, {}, 0, false};
 
 	uint32_t stack[24];
 	int stack_ptr = 0;

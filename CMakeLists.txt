@@ -1,13 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
 project(path_tracer VERSION 1.0.0 LANGUAGES CXX)
 
-option(ENABLE_CUDA "Enable CUDA support" ON)
-
-if(ENABLE_CUDA)
-    enable_language(CUDA)
+# disable MSVC's default CRT linkage to suppress warnings
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
 endif()
 
-# Add third-party subdirectories
+option(ENABLE_CUDA "Enable CUDA support" ON)
+if(ENABLE_CUDA)
+    enable_language(CUDA)
+    # suppress NVCC warnings caused by GLM
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --diag-suppress 20012,20094 --expt-relaxed-constexpr")
+endif()
+
 add_subdirectory("vendor/glad")
 add_subdirectory("vendor/glfw")
 add_subdirectory("vendor/glm")
@@ -16,7 +21,6 @@ add_subdirectory("vendor/portable-file-dialogs")
 add_subdirectory("vendor/stb")
 add_subdirectory("vendor/tinygltf")
 
-# Define "${PROJECT_NAME}" target
 file(GLOB_RECURSE TARGET_SOURCES CONFIGURE_DEPENDS
     "src/*.hpp"
     "src/*.inl"
@@ -46,9 +50,6 @@ if(ENABLE_CUDA)
         CUDA_SEPARABLE_COMPILATION ON
         CUDA_ARCHITECTURES 75
     )
-    # suppress NVCC warnings caused by GLM 
-    target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=20012>)
-    target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
