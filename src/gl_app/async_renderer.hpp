@@ -98,6 +98,14 @@ public:
 #endif
 	}
 
+	void load_hdri(const std::filesystem::path &path) {
+		std::lock_guard<std::mutex> lock(scene_mutex);
+		scn->load_hdri(path);
+		#ifdef ENABLE_CUDA
+		cuda_scn = nullptr;
+		#endif
+	}
+
 	// access the scene with automatic locking
 	// use like: renderer.with_scene([](scene &s) { s.camera_transform = ...; });
 	void with_scene(const std::function<void(scene &)> &func) {

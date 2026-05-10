@@ -95,9 +95,7 @@ int main() {
 	pt_gui.on_hdri_changed = [&](const std::filesystem::path &path) {
 		if (!path.empty()) {
 			std::cout << "Load hdri: " << path << std::endl;
-			renderer.with_scene([&](scene &s) {
-				s.load_hdri(path);
-			});
+			renderer.load_hdri(path);
 			pt_gui.hdri_intensity = 1.0f;
 			pt_gui.on_hdri_intensity_changed(1.0f);
 			renderer.restart_sampling();
