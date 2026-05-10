@@ -79,6 +79,7 @@ CUDA_CALLABLE inline glm::fvec3 path_trace(const scene_data &scn, glm::fvec3 pos
 
 					// pdf=1, because ray ALWAYS hits the sun
 					glm::vec3 weight = brdf; /* / pdf; */
+					weight = glm::clamp(weight, glm::fvec3(0.0f), glm::fvec3(1.0f));
 					accumulated_light += throughput * weight * scn.sunlight_intensity;
 				}
 
