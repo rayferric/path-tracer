@@ -20,6 +20,11 @@ public:
     }
 	~async_renderer() {
 		stop();
+		#ifdef ENABLE_CUDA
+		if (hdr_buf_cuda) {
+			cuda_free(hdr_buf_cuda);
+		}
+		#endif
 	}
 
     void resize(int width, int height) {
@@ -32,6 +37,12 @@ public:
         back_buf = buf_b.data();
         hdr_buf.resize(width * height);
 		std::fill(hdr_buf.begin(), hdr_buf.end(), glm::fvec4(0.0f));
+		#ifdef ENABLE_CUDA
+		if (hdr_buf_cuda) {
+			cuda_free(hdr_buf_cuda);
+		}
+		#endif
+		hdr_buf_cuda = nullptr;
 		frame_ready = false;
 		current_sample_idx = 0;
 		start();
@@ -146,7 +157,12 @@ private:
 							cuda_scn = std::make_unique<cuda_scene>(*scn);
 						}
 						cuda_scn->copy_lightweight_data(*scn);
-						render_sample_cuda(*cuda_scn, hdr_buf.data(), width, height, current_sample_idx, transparent_background);
+						if (!hdr_buf_cuda) {
+							hdr_buf_cuda = static_cast<glm::fvec4 *>(cuda_malloc(width * height * sizeof(glm::fvec4)));
+						}
+						cuda_memcpy(hdr_buf_cuda, hdr_buf.data(), width * height * sizeof(glm::fvec4), cuda_memcpy_kind::host_to_device);
+						render_sample_cuda(*cuda_scn, hdr_buf_cuda, width, height, current_sample_idx, transparent_background);
+						cuda_memcpy(hdr_buf.data(), hdr_buf_cuda, width * height * sizeof(glm::fvec4), cuda_memcpy_kind::device_to_host);
 					}
 					#else
 					if (false) {}
@@ -197,5 +213,6 @@ private:
 	std::unique_ptr<scene> scn;
     #ifdef ENABLE_CUDA
 	std::unique_ptr<cuda_scene> cuda_scn;
+	glm::fvec4 *hdr_buf_cuda = nullptr;
     #endif
 };

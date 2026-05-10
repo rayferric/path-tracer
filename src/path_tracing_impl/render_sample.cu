@@ -32,6 +32,6 @@ void render_sample_cuda(
     render_sample_kernel<<<grid, block>>>(
         scn, out_buf, width, height, sample_idx, transparent_bg
     );
-
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_KERNEL_LAUNCH();
+    CUDA_CHECK(cudaDeviceSynchronize());
 }

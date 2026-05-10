@@ -9,8 +9,8 @@ template <typename T> static void cuda_alloc_copy(T **gpu_ptr, size_t count) {
 	// gpu_ptr is set to cpu address
 	const T *cpu_ptr = *gpu_ptr;
 
-	cudaMalloc(gpu_ptr, count * sizeof(T));
-	cudaMemcpy(*gpu_ptr, cpu_ptr, count * sizeof(T), cudaMemcpyHostToDevice);
+	CUDA_CHECK(cudaMalloc((void**)gpu_ptr, count * sizeof(T)));
+	CUDA_CHECK(cudaMemcpy(*gpu_ptr, cpu_ptr, count * sizeof(T), cudaMemcpyHostToDevice));
 }
 
 // public api impl below
@@ -29,12 +29,12 @@ cuda_scene::cuda_scene(const scene &src) {
 }
 
 cuda_scene::~cuda_scene() {
-	cudaFree(this->texture_data);
-	cudaFree(this->textures);
-	cudaFree(this->materials);
-	cudaFree(this->triangles_ext);
-	cudaFree(this->triangles);
-	cudaFree(this->bvh_nodes);
+	CUDA_CHECK(cudaFree(this->texture_data));
+	CUDA_CHECK(cudaFree(this->textures));
+	CUDA_CHECK(cudaFree(this->materials));
+	CUDA_CHECK(cudaFree(this->triangles_ext));
+	CUDA_CHECK(cudaFree(this->triangles));
+	CUDA_CHECK(cudaFree(this->bvh_nodes));
 }
 
 void cuda_scene::copy_lightweight_data(const scene &src) {
