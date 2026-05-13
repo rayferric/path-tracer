@@ -8,7 +8,6 @@
 #include <concepts>
 #include <cstdint>
 #include <cstring>
-#include <execution>
 #include <filesystem>
 #include <fstream>
 #include <functional>
