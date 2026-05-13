@@ -41,8 +41,8 @@ public:
 		if (hdr_buf_cuda) {
 			cuda_free(hdr_buf_cuda);
 		}
-		#endif
 		hdr_buf_cuda = nullptr;
+		#endif
 		frame_ready = false;
 		current_sample_idx = 0;
 		start();
@@ -169,7 +169,7 @@ private:
 							hdr_buf_cuda = static_cast<glm::fvec4 *>(cuda_malloc(width * height * sizeof(glm::fvec4)));
 						}
 						cuda_memcpy(hdr_buf_cuda, hdr_buf.data(), width * height * sizeof(glm::fvec4), cuda_memcpy_kind::host_to_device);
-						render_sample_cuda(*cuda_scn, hdr_buf_cuda, width, height, current_sample_idx, transparent_background);
+						render_sample_cuda(*reinterpret_cast<scene_data *>(cuda_scn.get()), hdr_buf_cuda, width, height, current_sample_idx, transparent_background);
 						cuda_memcpy(hdr_buf.data(), hdr_buf_cuda, width * height * sizeof(glm::fvec4), cuda_memcpy_kind::device_to_host);
 					}
 					#else
@@ -177,7 +177,7 @@ private:
 					#endif
 
 					else {
-						render_sample(*scn, hdr_buf.data(), width, height, current_sample_idx, transparent_background);
+						render_sample(*reinterpret_cast<scene_data *>(scn.get()), hdr_buf.data(), width, height, current_sample_idx, transparent_background);
 					}
 					rendered_anything = true;
 					current_sample_idx++;

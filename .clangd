@@ -1,0 +1,4 @@
+If:
+  PathMatch: .*pch\.hpp
+Diagnostics:
+  UnusedIncludes: None
