@@ -12,8 +12,12 @@ public:
 
 	GLFWwindow *glfw_window;
 
-	double get_scroll_x() const { return scroll_x; }
-	double get_scroll_y() const { return scroll_y; }
+	double get_scroll_x() const {
+		return scroll_x;
+	}
+	double get_scroll_y() const {
+		return scroll_y;
+	}
 
 	window();
 	~window();

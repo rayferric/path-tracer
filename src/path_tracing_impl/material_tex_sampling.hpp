@@ -128,7 +128,7 @@ CUDA_CALLABLE inline glm::fvec3 sample_environment(const scene_data &scn, glm::f
 	if (scn.env_tex_idx >= 0) {
 		// map direction to equirectangular UV
 		float u = std::atan2(dir.z, dir.x) * 0.1591f + 0.5f;
-		float v = std::asin (dir.y)        * 0.3183f + 0.5f;
+		float v = std::asin(dir.y) * 0.3183f + 0.5f;
 
 		color *= glm::fvec3(_sample_texture(scn, scn.env_tex_idx, glm::fvec2(u, v)));
 	}

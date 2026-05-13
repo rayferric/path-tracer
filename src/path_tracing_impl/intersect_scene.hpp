@@ -147,7 +147,7 @@ CUDA_CALLABLE inline hit_info intersect_scene(const scene_data &scn, glm::fvec3 
 			uint32_t left_idx = node.left_idx_or_tri_begin;
 			uint32_t right_idx = node.right_idx_or_tri_count;
 
-            assert(stack_ptr + 2 <= 24 && "BVH stack overflow, tree is too deep.");
+			assert(stack_ptr + 2 <= 24 && "BVH stack overflow, tree is too deep.");
 
 			stack[stack_ptr++] = left_idx;
 			stack[stack_ptr++] = right_idx;

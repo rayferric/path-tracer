@@ -9,7 +9,7 @@ template <typename T> static void cuda_alloc_copy(T **gpu_ptr, size_t count) {
 	// gpu_ptr is set to cpu address
 	const T *cpu_ptr = *gpu_ptr;
 
-	CUDA_CHECK(cudaMalloc((void**)gpu_ptr, count * sizeof(T)));
+	CUDA_CHECK(cudaMalloc((void **)gpu_ptr, count * sizeof(T)));
 	CUDA_CHECK(cudaMemcpy(*gpu_ptr, cpu_ptr, count * sizeof(T), cudaMemcpyHostToDevice));
 }
 
@@ -17,7 +17,7 @@ template <typename T> static void cuda_alloc_copy(T **gpu_ptr, size_t count) {
 
 cuda_scene::cuda_scene(const scene &src) {
 	// directly copy all values
-	memcpy(static_cast<scene_data *>(this), static_cast<const scene_data*>(&src), sizeof(scene_data));
+	memcpy(static_cast<scene_data *>(this), static_cast<const scene_data *>(&src), sizeof(scene_data));
 
 	// ...then fix-up buffers:
 	cuda_alloc_copy(&texture_data, texture_data_sz);

@@ -17,44 +17,40 @@
 #include <filesystem>
 
 bool mat4_equal(const glm::mat4 &a, const glm::mat4 &b, float eps = 0.0001f) {
-    for (int i = 0; i < 4; i++) {
-        if (!glm::all(glm::epsilonEqual(a[i], b[i], eps))) {
-            return false;
-        }
-    }
-    return true;
+	for (int i = 0; i < 4; i++) {
+		if (!glm::all(glm::epsilonEqual(a[i], b[i], eps))) {
+			return false;
+		}
+	}
+	return true;
 }
 
 // convert direction vector to yaw,pitch angles
 // yaw: rotation around y axis, 0 = -z direction
 // pitch: elevation from horizon, 0 = horizontal, pi/2 = straight up
 glm::vec2 dir_to_angles(glm::vec3 dir) {
-    dir = glm::normalize(dir);
-    
-    float yaw = atan2(dir.x, -dir.z);
-    float pitch = -asin(dir.y);
-    
-    return glm::vec2(yaw, pitch);
+	dir = glm::normalize(dir);
+
+	float yaw = atan2(dir.x, -dir.z);
+	float pitch = -asin(dir.y);
+
+	return glm::vec2(yaw, pitch);
 }
 glm::vec3 angles_to_dir(glm::vec2 angles) {
-    float yaw = angles.x;
-    float pitch = -angles.y;
-    
-    float cos_pitch = cos(pitch);
-    
-    return glm::vec3(
-        cos_pitch * sin(yaw),
-        sin(pitch),
-        -cos_pitch * cos(yaw)
-    );
+	float yaw = angles.x;
+	float pitch = -angles.y;
+
+	float cos_pitch = cos(pitch);
+
+	return glm::vec3(cos_pitch * sin(yaw), sin(pitch), -cos_pitch * cos(yaw));
 }
 
 glm::fvec3 temp_to_tint(float temp) {
-    if (temp < 0.0f) {
-        return glm::mix(glm::fvec3(1.0f), glm::fvec3(0.2f, 0.5f, 1.0f), -temp);
-    } else {
-        return glm::mix(glm::fvec3(1.0f), glm::fvec3(1.0f, 0.4f, 0.2f), temp);
-    }
+	if (temp < 0.0f) {
+		return glm::mix(glm::fvec3(1.0f), glm::fvec3(0.2f, 0.5f, 1.0f), -temp);
+	} else {
+		return glm::mix(glm::fvec3(1.0f), glm::fvec3(1.0f, 0.4f, 0.2f), temp);
+	}
 }
 
 int main() {

@@ -433,7 +433,7 @@ template <typename T> T *copy_vector_to_array(const std::vector<T> &vec, uint32_
 	if (out_count == 0) {
 		return nullptr;
 	}
-	T *arr = (T*)malloc(out_count * sizeof(T));
+	T *arr = (T *)malloc(out_count * sizeof(T));
 	memcpy(arr, vec.data(), out_count * sizeof(T));
 	return arr;
 }

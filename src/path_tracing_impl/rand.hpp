@@ -47,7 +47,7 @@ CUDA_CALLABLE inline glm::fvec3 rand_cone_dir(rng_state &rng, glm::fvec3 normal,
 }
 
 CUDA_CALLABLE inline glm::fvec3 rand_cone_dir_uniform(rng_state &rng, glm::fvec3 normal, float angular_radius) {
-    float max_cos_theta = cos(angular_radius);
+	float max_cos_theta = cos(angular_radius);
 	float cos_theta = rand_float(rng) * (1 - max_cos_theta) + max_cos_theta;
 	return rand_cone_dir(rng, normal, cos_theta);
 }

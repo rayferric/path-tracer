@@ -2,51 +2,51 @@
 
 #include "../pch.hpp"
 
-#include "../scene.hpp"
 #include "../path_tracing.hpp"
+#include "../scene.hpp"
 
 #include "./fps_tracker.hpp"
 #include "./tonemapping.hpp"
 
 class async_renderer {
 public:
-    async_renderer() {
+	async_renderer() {
 		running = false;
 		use_cuda = false;
 		num_samples_cap = 1000;
 		sampling_restart_requested = false;
 
 		resize(640, 360);
-    }
+	}
 	~async_renderer() {
 		stop();
-		#ifdef ENABLE_CUDA
+#ifdef ENABLE_CUDA
 		if (hdr_buf_cuda) {
 			cuda_free(hdr_buf_cuda);
 		}
-		#endif
+#endif
 	}
 
-    void resize(int width, int height) {
+	void resize(int width, int height) {
 		stop();
-        this->width = width;
-        this->height = height;
-        buf_a.resize(width * height * 4, 255);
-        buf_b.resize(width * height * 4, 255);
-        front_buf = buf_a.data();
-        back_buf = buf_b.data();
-        hdr_buf.resize(width * height);
+		this->width = width;
+		this->height = height;
+		buf_a.resize(width * height * 4, 255);
+		buf_b.resize(width * height * 4, 255);
+		front_buf = buf_a.data();
+		back_buf = buf_b.data();
+		hdr_buf.resize(width * height);
 		std::fill(hdr_buf.begin(), hdr_buf.end(), glm::fvec4(0.0f));
-		#ifdef ENABLE_CUDA
+#ifdef ENABLE_CUDA
 		if (hdr_buf_cuda) {
 			cuda_free(hdr_buf_cuda);
 		}
 		hdr_buf_cuda = nullptr;
-		#endif
+#endif
 		frame_ready = false;
 		current_sample_idx = 0;
 		start();
-    }
+	}
 
 	void set_cuda_enabled(bool enabled) {
 		use_cuda = enabled;
@@ -101,9 +101,9 @@ public:
 	void load_hdri(const std::filesystem::path &path) {
 		std::lock_guard<std::mutex> lock(scene_mutex);
 		scn->load_hdri(path);
-		#ifdef ENABLE_CUDA
+#ifdef ENABLE_CUDA
 		cuda_scn = nullptr;
-		#endif
+#endif
 	}
 
 	// access the scene with automatic locking
@@ -159,7 +159,7 @@ private:
 			if (current_sample_idx < num_samples_cap) {
 				std::lock_guard<std::mutex> lock(scene_mutex);
 				if (scn) {
-					#ifdef ENABLE_CUDA
+#ifdef ENABLE_CUDA
 					if (cuda_available() && use_cuda) {
 						if (!cuda_scn) {
 							cuda_scn = std::make_unique<cuda_scene>(*scn);
@@ -172,9 +172,10 @@ private:
 						render_sample_cuda(*reinterpret_cast<scene_data *>(cuda_scn.get()), hdr_buf_cuda, width, height, current_sample_idx, transparent_background);
 						cuda_memcpy(hdr_buf.data(), hdr_buf_cuda, width * height * sizeof(glm::fvec4), cuda_memcpy_kind::device_to_host);
 					}
-					#else
-					if (false) {}
-					#endif
+#else
+					if (false) {
+					}
+#endif
 
 					else {
 						render_sample(*reinterpret_cast<scene_data *>(scn.get()), hdr_buf.data(), width, height, current_sample_idx, transparent_background);
@@ -219,8 +220,8 @@ private:
 
 	std::mutex scene_mutex;
 	std::unique_ptr<scene> scn;
-    #ifdef ENABLE_CUDA
+#ifdef ENABLE_CUDA
 	std::unique_ptr<cuda_scene> cuda_scn;
 	glm::fvec4 *hdr_buf_cuda = nullptr;
-    #endif
+#endif
 };

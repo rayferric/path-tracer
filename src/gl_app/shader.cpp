@@ -19,16 +19,13 @@ shader::~shader() {
 	glDeleteProgram(prog_id);
 }
 
-static void
-check_shader_compile(GLuint shader_id, const std::string &shader_name) {
+static void check_shader_compile(GLuint shader_id, const std::string &shader_name) {
 	GLint success;
 	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		GLchar info[512];
 		glGetShaderInfoLog(shader_id, 512, NULL, info);
-		throw std::runtime_error(
-		    shader_name + " compilation failed:\n" + std::string(info) + "\n"
-		);
+		throw std::runtime_error(shader_name + " compilation failed:\n" + std::string(info) + "\n");
 	}
 }
 
@@ -38,9 +35,7 @@ static void check_program_link(GLuint prog_id) {
 	if (!success) {
 		GLchar info[512];
 		glGetProgramInfoLog(prog_id, 512, NULL, info);
-		throw std::runtime_error(
-		    "glLinkProgram failed:\n" + std::string(info) + "\n"
-		);
+		throw std::runtime_error("glLinkProgram failed:\n" + std::string(info) + "\n");
 	}
 }
 
@@ -72,10 +67,7 @@ void shader::compile(const std::string &vert_src, const std::string &frag_src) {
 	glDeleteShader(v_id);
 }
 
-void shader::compile_from_files(
-    const std::filesystem::path &vert_path,
-    const std::filesystem::path &frag_path
-) {
+void shader::compile_from_files(const std::filesystem::path &vert_path, const std::filesystem::path &frag_path) {
 	std::string vert_src = load_text(vert_path);
 	std::string frag_src = load_text(frag_path);
 	return compile(vert_src, frag_src);

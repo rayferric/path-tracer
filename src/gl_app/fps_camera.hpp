@@ -22,11 +22,11 @@ public:
 	// number of full rots per full monitor width of mouse movement
 	float sensitivity = 0.25f;
 
-	float look_smoothing = 0.0f;//0.6f;
-	float move_smoothing = 0.0f;//0.85f;
+	float look_smoothing = 0.0f; // 0.6f;
+	float move_smoothing = 0.0f; // 0.85f;
 
-	float zoom_smoothing = 0.0f;//0.85f;
-	float zoom_speed = 5.0f; // fov change per scroll unit
+	float zoom_smoothing = 0.0f; // 0.85f;
+	float zoom_speed = 5.0f;     // fov change per scroll unit
 
 	void update_fps_pose_from_glfw_input(const window &w, float dt, bool prevent_mouse_capture = false);
 

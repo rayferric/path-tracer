@@ -10,13 +10,13 @@ inline glm::vec3 tonemap_approx_aces(const glm::fvec3 &hdr) {
 }
 
 inline void tonemap_buffer_srgb8(uint8_t *out, const glm::fvec4 *in, size_t size, float exposure) {
-    for (size_t i = 0; i < size; i++) {
-        glm::fvec3 color = tonemap_approx_aces(glm::fvec3(in[i]) * exposure);
-        // gamma correction - we're outputting to srgb buffer
-        color = glm::pow(color, glm::fvec3(1.0f / 2.2f));
-        for (int c = 0; c < 3; c++) {
-            out[i * 4 + c] = static_cast<uint8_t>(std::clamp(color[c] * 255.0f, 0.0f, 255.0f));
-        }
-        out[i * 4 + 3] = static_cast<uint8_t>(std::clamp(in[i].a * 255.0f, 0.0f, 255.0f));
-    }
+	for (size_t i = 0; i < size; i++) {
+		glm::fvec3 color = tonemap_approx_aces(glm::fvec3(in[i]) * exposure);
+		// gamma correction - we're outputting to srgb buffer
+		color = glm::pow(color, glm::fvec3(1.0f / 2.2f));
+		for (int c = 0; c < 3; c++) {
+			out[i * 4 + c] = static_cast<uint8_t>(std::clamp(color[c] * 255.0f, 0.0f, 255.0f));
+		}
+		out[i * 4 + 3] = static_cast<uint8_t>(std::clamp(in[i].a * 255.0f, 0.0f, 255.0f));
+	}
 }

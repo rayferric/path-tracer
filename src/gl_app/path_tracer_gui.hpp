@@ -19,10 +19,10 @@ public:
 	int current_samples = 0;
 	bool paused = false;
 	int max_samples = 1000;
-	
+
 	bool cuda = false;
 	bool denoising = false;
-	
+
 	bool transparent_background = false;
 	float exposure = 1.0f;
 

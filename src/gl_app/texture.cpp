@@ -10,16 +10,16 @@ texture::texture(int width, int height, GLenum internal_format) {
 
 	GLenum format;
 	switch (internal_format) {
-		case GL_RGBA8:
-		case GL_SRGB8_ALPHA8:
-			format = GL_RGBA;
-			break;
-		case GL_RGB8:
-		case GL_SRGB8:
-			format = GL_RGB;
-			break;
-		default:
-			throw std::runtime_error("Unsupported internal format: " + std::to_string(internal_format));
+	case GL_RGBA8:
+	case GL_SRGB8_ALPHA8:
+		format = GL_RGBA;
+		break;
+	case GL_RGB8:
+	case GL_SRGB8:
+		format = GL_RGB;
+		break;
+	default:
+		throw std::runtime_error("Unsupported internal format: " + std::to_string(internal_format));
 	}
 	this->format = format;
 
@@ -49,16 +49,8 @@ texture::~texture() {
 
 void texture::upload(const void *data) {
 	glBindTexture(GL_TEXTURE_2D, tex_id);
-	
-	glTexSubImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    0, 0,
-	    this->width, this->height,
-	    this->format,
-	    GL_UNSIGNED_BYTE,
-	    data
-	);
+
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, this->format, GL_UNSIGNED_BYTE, data);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 }

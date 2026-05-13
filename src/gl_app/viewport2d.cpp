@@ -8,7 +8,7 @@ void viewport2d::update_from_glfw_input(const window &win, float dt, float tex_w
 
 	double raw_mx, raw_my;
 	glfwGetCursorPos(win.glfw_window, &raw_mx, &raw_my);
-	
+
 	// invert mouse Y to match OpenGL coords
 	float mouse_x = static_cast<float>(raw_mx);
 	float mouse_y = static_cast<float>(win_h) - static_cast<float>(raw_my);
@@ -18,7 +18,7 @@ void viewport2d::update_from_glfw_input(const window &win, float dt, float tex_w
 
 	float scroll_delta_x = static_cast<float>(current_scroll_x - last_scroll_x);
 	float scroll_delta_y = static_cast<float>(current_scroll_y - last_scroll_y);
-	
+
 	last_scroll_x = current_scroll_x;
 	last_scroll_y = current_scroll_y;
 
@@ -61,10 +61,10 @@ void viewport2d::update_from_glfw_input(const window &win, float dt, float tex_w
 	float zoom_decay = std::pow(zoom_smoothing, dt * 60.0f);
 	zoom = target_zoom * (1.0f - zoom_decay) + zoom * zoom_decay;
 
-	// update pan whenever zoom changes to keep the cursor position anchored 
+	// update pan whenever zoom changes to keep the cursor position anchored
 	if (std::abs(zoom - old_zoom) > 0.000001f && !prevent_capture) {
 		float base_scale = std::min(win_w / tex_w, win_h / tex_h);
-		
+
 		float old_scale = base_scale * old_zoom;
 		float new_scale = base_scale * zoom;
 

@@ -18,15 +18,7 @@ private:
 
 //////////
 
-void GLAPIENTRY opengl_error_callback(
-    GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar *message,
-    const void *userParam
-) {
+void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
 	// ignore non-significant codes
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) {
 		return;
@@ -43,7 +35,7 @@ window::window() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 4); // request MSAA-capable framebuffer
+	glfwWindowHint(GLFW_SAMPLES, 4);              // request MSAA-capable framebuffer
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE); // request sRGB framebuffer storage
 }
 
@@ -69,9 +61,7 @@ void window::open(uint32_t w, uint32_t h, const std::string &title) {
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(opengl_error_callback, nullptr);
-	glDebugMessageControl(
-	    GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE
-	);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
 	// enable MSAA and sRGB
 	glEnable(GL_MULTISAMPLE);
@@ -112,8 +102,7 @@ void window::run_loop(const window::loop_info &info) {
 
 // static
 void window::fbsz_cb(GLFWwindow *glfw_window, int width, int height) {
-	window *this_ptr =
-	    static_cast<window *>(glfwGetWindowUserPointer(glfw_window));
+	window *this_ptr = static_cast<window *>(glfwGetWindowUserPointer(glfw_window));
 	if (this_ptr->cur_loop_info.on_resize) {
 		this_ptr->cur_loop_info.on_resize(width, height);
 	}
@@ -121,8 +110,7 @@ void window::fbsz_cb(GLFWwindow *glfw_window, int width, int height) {
 
 // static
 void window::scroll_cb(GLFWwindow *glfw_window, double xoffset, double yoffset) {
-	window *this_ptr =
-	    static_cast<window *>(glfwGetWindowUserPointer(glfw_window));
+	window *this_ptr = static_cast<window *>(glfwGetWindowUserPointer(glfw_window));
 	this_ptr->scroll_x += xoffset;
 	this_ptr->scroll_y += yoffset;
 }

@@ -4,14 +4,13 @@
 
 class fps_tracker {
 public:
-	fps_tracker(float update_interval = 0.5f) 
-		: update_interval(update_interval), frame_count(0), elapsed_time(0.0f) {
+	fps_tracker(float update_interval = 0.5f) : update_interval(update_interval), frame_count(0), elapsed_time(0.0f) {
 		current_fps.store(0);
 	}
 
 	void mark_frame() {
 		auto now = std::chrono::high_resolution_clock::now();
-		
+
 		if (last_time.time_since_epoch().count() == 0) {
 			last_time = now;
 			return;
@@ -19,7 +18,7 @@ public:
 
 		float frame_time = std::chrono::duration<float>(now - last_time).count();
 		last_time = now;
-		
+
 		elapsed_time += frame_time;
 		frame_count++;
 

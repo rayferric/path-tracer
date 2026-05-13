@@ -71,7 +71,7 @@ CUDA_CALLABLE inline void render_sample_one_pixel(const scene_data &scn, glm::fv
 
 	// overlay on environment
 	if (!transparent_bg) {
-		glm::fvec3 env_color = sample_environment(scn, dir); 
+		glm::fvec3 env_color = sample_environment(scn, dir);
 		old_color = glm::mix(env_color, old_color, old_alpha);
 		old_alpha = 1.0;
 	}
