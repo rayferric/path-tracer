@@ -72,6 +72,9 @@ void window::open(uint32_t w, uint32_t h, const std::string &title) {
 
 	// set scroll callback
 	glfwSetScrollCallback(glfw_window, window::scroll_cb);
+
+	// enable vsync
+	glfwSwapInterval(1);
 }
 
 void window::run_loop(const window::loop_info &info) {

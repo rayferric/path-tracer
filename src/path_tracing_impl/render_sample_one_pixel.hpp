@@ -6,7 +6,7 @@
 
 #include "./path_trace.hpp"
 #include "./rand.hpp"
-#include "material_tex_sampling.hpp"
+#include "./material_tex_sampling.hpp"
 
 CUDA_CALLABLE inline void render_sample_one_pixel(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t x, uint32_t y, uint32_t sample_idx, bool transparent_bg);
 
@@ -45,24 +45,8 @@ CUDA_CALLABLE inline void render_sample_one_pixel(const scene_data &scn, glm::fv
 	glm::fvec4 old_sample = out_buf[y * width + x];
 	glm::fvec3 old_color = glm::fvec3(old_sample);
 	float old_alpha = old_sample.w;
-
-	// // Smart blending - needed for transparent background
+	
 	float sample_idx_f = sample_idx;
-	// if (transparent_bg && !hit_bg && old_alpha == 0.0f) {
-	// 	// an opaque sample will claim this pixel
-	// 	old_color = new_color;
-	// 	old_alpha = 1.0f / (sample_idx_f + 1.0f);
-	// } else if (transparent_bg && hit_bg && old_alpha != 0.0f) {
-	// 	// If a transparent sample encounters a claimed pixel
-	// 	// Preserve color and blend only alpha
-	// 	old_color = old_color;
-	// 	old_alpha = (old_alpha * sample_idx_f) / (sample_idx_f + 1.0f);
-	// } else if (!transparent_bg || !hit_bg) {
-	// 	// Otherwise if an opaque sample blends with a claimed pixel (or transparent background is disabled)
-	// 	float new_alpha = hit_bg ? 0.0f : 1.0f;
-	// 	old_color = (old_color * sample_idx_f + new_color) / (sample_idx_f + 1.0f);
-	// 	old_alpha = (old_alpha * sample_idx_f + new_alpha) / (sample_idx_f + 1.0f);
-	// }
 	if (!hit_bg) {
 		old_color = (old_color * sample_idx_f + new_color) / (sample_idx_f + 1.0f);
 	}

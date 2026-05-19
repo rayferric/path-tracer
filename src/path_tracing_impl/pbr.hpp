@@ -11,8 +11,7 @@
 CUDA_CALLABLE inline glm::fvec3 fresnel_f0(glm::fvec3 outcoming, glm::fvec3 incoming, glm::fvec3 f0);
 CUDA_CALLABLE inline float fresnel_ior(glm::fvec3 outcoming, glm::fvec3 incoming, float ior);
 
-CUDA_CALLABLE inline glm::vec3 brdf_diffuse(glm::fvec3 normal, glm::fvec3 incoming, glm::vec3 albedo, float metallic);
-CUDA_CALLABLE inline glm::vec3 brdf_specular(glm::fvec3 normal, glm::fvec3 outcoming, glm::fvec3 incoming, float roughness);
+CUDA_CALLABLE inline glm::vec3 eval_brdf(glm::fvec3 normal, glm::fvec3 outcoming, glm::fvec3 incoming, glm::vec3 albedo, float metallic, float roughness);
 
 CUDA_CALLABLE inline glm::fvec3 importance_diffuse(rng_state &rng, glm::fvec3 normal, glm::fvec3 outcoming);
 CUDA_CALLABLE inline glm::fvec3 importance_specular(rng_state &rng, glm::fvec3 normal, glm::fvec3 outcoming, float roughness);
@@ -95,15 +94,7 @@ CUDA_CALLABLE inline float distribution_ggx(glm::fvec3 normal, glm::fvec3 outcom
 	return cos_theta * roughness / (PBR_PI * denom * denom);
 }
 
-// Public API
-
-CUDA_CALLABLE inline glm::fvec3 fresnel_f0(glm::fvec3 outcoming, glm::fvec3 incoming, glm::fvec3 f0) {
-	return fresnel_schlick_f0(outcoming, incoming, f0);
-}
-
-CUDA_CALLABLE inline float fresnel_ior(glm::fvec3 outcoming, glm::fvec3 incoming, float ior) {
-	return fresnel_schlick_ior(outcoming, incoming, ior);
-}
+// BRDF
 
 CUDA_CALLABLE inline glm::vec3 brdf_diffuse(glm::fvec3 normal, glm::fvec3 incoming, glm::vec3 albedo, float metallic) {
 	return distribution_lambert(normal, incoming) * albedo * (1 - metallic);
@@ -117,6 +108,26 @@ CUDA_CALLABLE inline glm::vec3 brdf_specular(glm::fvec3 normal, glm::fvec3 outco
 	float n_dot_i = dot(normal, incoming);
 
 	return glm::vec3((dist * geo) / (4 * n_dot_o * n_dot_i));
+}
+
+// Public API
+
+CUDA_CALLABLE inline glm::fvec3 fresnel_f0(glm::fvec3 outcoming, glm::fvec3 incoming, glm::fvec3 f0) {
+	return fresnel_schlick_f0(outcoming, incoming, f0);
+}
+
+CUDA_CALLABLE inline float fresnel_ior(glm::fvec3 outcoming, glm::fvec3 incoming, float ior) {
+	return fresnel_schlick_ior(outcoming, incoming, ior);
+}
+
+CUDA_CALLABLE inline glm::vec3 eval_brdf(glm::fvec3 normal, glm::fvec3 outcoming, glm::fvec3 incoming, glm::vec3 albedo, float metallic, float roughness) {
+	glm::fvec3 diffuse_brdf = brdf_diffuse(normal, incoming, albedo, metallic);
+	glm::fvec3 specular_brdf = brdf_specular(normal, outcoming, incoming, roughness);
+
+	glm::fvec3 f0 = glm::mix(glm::fvec3(0.04f), albedo, metallic);
+	glm::fvec3 fresnel_term = fresnel_f0(outcoming, incoming, f0);
+
+	return glm::mix(diffuse_brdf, specular_brdf, fresnel_term);
 }
 
 CUDA_CALLABLE inline glm::fvec3 importance_diffuse(rng_state &rng, glm::fvec3 normal, glm::fvec3 outcoming) {

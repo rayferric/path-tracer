@@ -69,13 +69,7 @@ CUDA_CALLABLE inline glm::fvec3 path_trace(const scene_data &scn, glm::fvec3 pos
 				hit_info shadow_hit = intersect_scene(scn, shadow_origin, direct_incoming);
 
 				if (!shadow_hit.hit) {
-					glm::fvec3 diffuse_brdf = brdf_diffuse(normal, direct_incoming, albedo, metallic);
-					glm::fvec3 specular_brdf = brdf_specular(normal, outcoming, direct_incoming, roughness);
-
-					glm::fvec3 f0 = glm::mix(glm::fvec3(0.04f), albedo, metallic);
-					glm::fvec3 fresnel_term = fresnel_f0(outcoming, direct_incoming, f0);
-
-					glm::fvec3 brdf = glm::mix(diffuse_brdf, specular_brdf, fresnel_term);
+					glm::fvec3 brdf = eval_brdf(normal, outcoming, direct_incoming, albedo, metallic, roughness);
 
 					// pdf=1, because ray ALWAYS hits the sun
 					glm::vec3 weight = brdf; /* / pdf; */
@@ -112,14 +106,10 @@ CUDA_CALLABLE inline glm::fvec3 path_trace(const scene_data &scn, glm::fvec3 pos
 			break; // ^ no valid indirect direction
 		}
 
-		glm::fvec3 diffuse_brdf = brdf_diffuse(normal, indirect_incoming, albedo, metallic);
-		glm::fvec3 specular_brdf = brdf_specular(normal, outcoming, indirect_incoming, roughness);
+		glm::fvec3 brdf = eval_brdf(normal, outcoming, indirect_incoming, albedo, metallic, roughness);
 
-		glm::fvec3 f0 = glm::mix(glm::fvec3(0.04f), albedo, metallic);
-		glm::fvec3 fresnel_term = fresnel_f0(outcoming, indirect_incoming, f0);
-
-		glm::fvec3 brdf = glm::mix(diffuse_brdf, specular_brdf, fresnel_term);
-
+		// float pdf = specular_sample ? pdf_specular(normal, outcoming, indirect_incoming, roughness) : pdf_diffuse(normal, indirect_incoming);
+		// also unbiased, but faster convergence:
 		float diffuse_pdf = pdf_diffuse(normal, indirect_incoming);
 		float specular_pdf = pdf_specular(normal, outcoming, indirect_incoming, roughness);
 		float pdf = glm::mix(diffuse_pdf, specular_pdf, specular_probability);
