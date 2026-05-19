@@ -1,0 +1,547 @@
+#include "../pch.hpp"
+
+#include <thrust/partition.h>
+#include <thrust/device_ptr.h>
+#include <thrust/execution_policy.h>
+#include <cub/cub.cuh>
+
+#include "../scene.hpp"
+
+#include "./rand.hpp"
+#include "./render_sample_one_pixel.hpp"
+#include "./material_tex_sampling.hpp"
+#include "./pbr.hpp"
+
+struct ray_state {
+	rng_state rng;
+
+	glm::fvec3 pos;
+	glm::fvec3 dir;
+	glm::fvec3 throughput;
+	glm::fvec3 accumulated_light;
+
+	bool active;
+	bool camera_ray;
+	bool camera_ray_hit_bg;
+
+	uint32_t pixel_idx;
+	glm::vec3 og_dir;
+	// ^ for env sampling in accumulate kernel, since dir is modified by bounce kernel
+};
+
+struct is_active {
+	__device__ __forceinline__ bool operator()(const ray_state &ray) const {
+		return ray.active; // or whatever flag you use to check if ray is still bouncing
+	}
+};
+
+__global__ void generate_primary_rays_kernel(
+	const scene_data scn,
+	ray_state *rays,
+	uint32_t width,
+	uint32_t height,
+	uint32_t sample_idx
+) {
+	uint32_t px = blockIdx.x * blockDim.x + threadIdx.x;
+	uint32_t py = blockIdx.y * blockDim.y + threadIdx.y;
+	
+	if (px >= width || py >= height) return;
+	
+	uint32_t idx = py * width + px;
+	ray_state &ray = rays[idx];
+	ray.rng = rand_init(px, py, sample_idx);
+
+	gen_camera_ray(scn, ray.rng, width, height, px, py, ray.pos, ray.dir);
+	ray.throughput = glm::fvec3(1.0f);
+	ray.accumulated_light = glm::fvec3(0.0f);
+
+	ray.active = true;
+	ray.camera_ray = true;
+	ray.camera_ray_hit_bg = false;
+
+	ray.pixel_idx = idx;
+	ray.og_dir = ray.dir;
+}
+
+__global__ void process_bounce_kernel(
+	const scene_data scn,
+	ray_state *rays,
+	uint32_t num_rays,
+	uint32_t bounce_idx
+) {
+	uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= num_rays) return;
+	
+	ray_state &ray = rays[idx];
+	if (!ray.active) return;
+	
+	hit_info hit = intersect_scene(scn, ray.pos, ray.dir);
+	
+	if (!hit.hit) {
+		ray.accumulated_light += ray.throughput * sample_environment(scn, ray.dir);
+		if (ray.camera_ray) {
+			if (rand_float(ray.rng) < avg_components(ray.throughput)) {
+				ray.camera_ray_hit_bg = true;
+			}
+		}
+		ray.active = false;
+		return;
+	}
+	
+	const material &mat = scn.materials[hit.mat_idx];
+	mat_sample mat_values = sample_material(scn, hit.mat_idx, hit.uv, hit.normal, hit.tangent);
+	auto [albedo, opacity, roughness, metallic, emissive, normal, ior] = mat_values;
+	
+	// opacity testing
+	if (opacity < 1.0f && rand_float(ray.rng) > opacity && !mat.shadow_catcher) {
+		ray.pos = hit.position + ray.dir * 0.001f;
+		return; // continue with same direction
+	}
+	
+	// add emissive
+	ray.accumulated_light += ray.throughput * emissive;
+	
+	glm::fvec3 outcoming = -ray.dir;
+	
+	// fix normals below surface
+	if (glm::dot(normal, outcoming) < 0.0f) {
+		normal = -normal;
+	}
+	
+	roughness = glm::max(roughness, 0.01f);
+	
+	// direct lighting
+	if (glm::length(scn.sunlight_intensity) > 0.0f) {
+		glm::fvec3 direct_incoming = -scn.sunlight_dir;
+		direct_incoming = rand_cone_dir_uniform(ray.rng, direct_incoming, scn.sunlight_angular_radius);
+		
+		if (glm::dot(normal, direct_incoming) > 0.0f) {
+			glm::fvec3 shadow_origin = hit.position + direct_incoming * 0.001f;
+			hit_info shadow_hit = intersect_scene(scn, shadow_origin, direct_incoming);
+			
+			if (!shadow_hit.hit) {
+				glm::fvec3 brdf = eval_brdf(normal, outcoming, direct_incoming, albedo, metallic, roughness);
+				// pdf=1, because ray ALWAYS hits the sun
+				glm::vec3 weight = brdf; /* / pdf; */
+				weight = glm::clamp(weight, glm::fvec3(0.0f), glm::fvec3(1.0f));
+				ray.accumulated_light += ray.throughput * weight * scn.sunlight_intensity;
+			}
+			
+			if (shadow_hit.hit && mat.shadow_catcher && bounce_idx == 0) {
+				if (rand_float(ray.rng) > 0.75f) {
+					ray.camera_ray_hit_bg = true;
+				}
+				ray.accumulated_light = glm::fvec3(0.0f);
+				ray.active = false;
+				return;
+			}
+		}
+	}
+	
+	// shadow catcher outside of shadow behaves like bg
+	if (mat.shadow_catcher && ray.camera_ray) {
+		if (rand_float(ray.rng) < avg_components(ray.throughput)) {
+			ray.camera_ray_hit_bg = true;
+		}
+		ray.active = false;
+		return;
+	}
+	
+	// indirect lighting
+	glm::fvec3 reflected = glm::reflect(-outcoming, normal);
+	float specular_probability = fresnel_ior(outcoming, reflected, ior);
+	specular_probability = glm::max(specular_probability, metallic);
+	bool specular_sample = rand_float(ray.rng) < specular_probability;
+	glm::fvec3 indirect_incoming = specular_sample ? 
+		importance_specular(ray.rng, normal, outcoming, roughness) : 
+		importance_diffuse(ray.rng, normal, outcoming);
+	
+	if (glm::dot(normal, indirect_incoming) <= 0.0f) {
+		ray.active = false;
+		return;
+	}
+	
+	glm::fvec3 brdf = eval_brdf(normal, outcoming, indirect_incoming, albedo, metallic, roughness);
+	
+	float diffuse_pdf = pdf_diffuse(normal, indirect_incoming);
+	float specular_pdf = pdf_specular(normal, outcoming, indirect_incoming, roughness);
+	float pdf = glm::mix(diffuse_pdf, specular_pdf, specular_probability);
+	
+	glm::fvec3 weight = brdf / glm::max(pdf, 0.0001f);
+	weight = glm::clamp(weight, glm::fvec3(0.0f), glm::fvec3(1.0f));
+	ray.throughput *= weight;
+	
+	// setup next iteration
+	ray.pos = hit.position + indirect_incoming * 0.001f;
+	ray.dir = indirect_incoming;
+	ray.camera_ray = false;
+	
+	// russian roulette early termination
+	if (bounce_idx > 3) {
+		float continue_prob = glm::min(glm::max(ray.throughput.x, glm::max(ray.throughput.y, ray.throughput.z)), 0.95f);
+		if (rand_float(ray.rng) > continue_prob) {
+			ray.active = false;
+			return;
+		}
+		// compensate - increase throughput for the non-terminated rays
+		ray.throughput /= continue_prob;
+	}
+}
+
+__device__ void accumulate_pixel(ray_state &ray, const scene_data &scn, glm::fvec4 *out_buf, uint32_t sample_idx, bool transparent_bg) {
+	glm::fvec3 new_color = ray.accumulated_light;
+	glm::fvec4 old_sample = out_buf[ray.pixel_idx];
+	glm::fvec3 old_color = glm::fvec3(old_sample);
+	float old_alpha = old_sample.w;
+	
+	float sample_idx_f = sample_idx;
+	if (!ray.camera_ray_hit_bg) {
+		old_color = (old_color * sample_idx_f + new_color) / (sample_idx_f + 1.0f);
+	}
+	float new_alpha = ray.camera_ray_hit_bg ? 0.0f : 1.0f;
+	old_alpha = (old_alpha * sample_idx_f + new_alpha) / (sample_idx_f + 1.0f);
+
+	// overlay on environment
+	if (!transparent_bg) {
+		glm::fvec3 env_color = sample_environment(scn, ray.og_dir);
+		old_color = glm::mix(env_color, old_color, old_alpha);
+		old_alpha = 1.0;
+	}
+
+	out_buf[ray.pixel_idx] = glm::fvec4(old_color, old_alpha);
+}
+
+__global__ void process_bounce_kernel_compact(
+	const scene_data scn,
+	ray_state *rays,
+	ray_state *next_rays,
+	uint32_t num_rays,
+	uint32_t *num_out_rays,
+	uint32_t bounce_idx, glm::fvec4 *out_buf, uint32_t sample_idx, bool transparent_bg
+) {
+	uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= num_rays) return;
+	
+	ray_state &ray = rays[idx];
+	if (!ray.active) return;
+	
+	hit_info hit = intersect_scene(scn, ray.pos, ray.dir);
+	
+	if (!hit.hit) {
+		ray.accumulated_light += ray.throughput * sample_environment(scn, ray.dir);
+		if (ray.camera_ray) {
+			if (rand_float(ray.rng) < avg_components(ray.throughput)) {
+				ray.camera_ray_hit_bg = true;
+			}
+		}
+		ray.active = false;
+		accumulate_pixel(ray, scn, out_buf, sample_idx, transparent_bg);
+		return;
+	}
+	
+	const material &mat = scn.materials[hit.mat_idx];
+	mat_sample mat_values = sample_material(scn, hit.mat_idx, hit.uv, hit.normal, hit.tangent);
+	auto [albedo, opacity, roughness, metallic, emissive, normal, ior] = mat_values;
+	
+	// opacity testing
+	if (opacity < 1.0f && rand_float(ray.rng) > opacity && !mat.shadow_catcher) {
+		ray.pos = hit.position + ray.dir * 0.001f;
+		return; // continue with same direction
+	}
+	
+	// add emissive
+	ray.accumulated_light += ray.throughput * emissive;
+	
+	glm::fvec3 outcoming = -ray.dir;
+	
+	// fix normals below surface
+	if (glm::dot(normal, outcoming) < 0.0f) {
+		normal = -normal;
+	}
+	
+	roughness = glm::max(roughness, 0.01f);
+	
+	// direct lighting
+	if (glm::length(scn.sunlight_intensity) > 0.0f) {
+		glm::fvec3 direct_incoming = -scn.sunlight_dir;
+		direct_incoming = rand_cone_dir_uniform(ray.rng, direct_incoming, scn.sunlight_angular_radius);
+		
+		if (glm::dot(normal, direct_incoming) > 0.0f) {
+			glm::fvec3 shadow_origin = hit.position + direct_incoming * 0.001f;
+			hit_info shadow_hit = intersect_scene(scn, shadow_origin, direct_incoming);
+			
+			if (!shadow_hit.hit) {
+				glm::fvec3 brdf = eval_brdf(normal, outcoming, direct_incoming, albedo, metallic, roughness);
+				// pdf=1, because ray ALWAYS hits the sun
+				glm::vec3 weight = brdf; /* / pdf; */
+				weight = glm::clamp(weight, glm::fvec3(0.0f), glm::fvec3(1.0f));
+				ray.accumulated_light += ray.throughput * weight * scn.sunlight_intensity;
+			}
+			
+			if (shadow_hit.hit && mat.shadow_catcher && bounce_idx == 0) {
+				if (rand_float(ray.rng) > 0.75f) {
+					ray.camera_ray_hit_bg = true;
+				}
+				ray.accumulated_light = glm::fvec3(0.0f);
+				ray.active = false;
+				accumulate_pixel(ray, scn, out_buf, sample_idx, transparent_bg);
+				return;
+			}
+		}
+	}
+	
+	// shadow catcher outside of shadow behaves like bg
+	if (mat.shadow_catcher && ray.camera_ray) {
+		if (rand_float(ray.rng) < avg_components(ray.throughput)) {
+			ray.camera_ray_hit_bg = true;
+		}
+		ray.active = false;
+		accumulate_pixel(ray, scn, out_buf, sample_idx, transparent_bg);
+		return;
+	}
+	
+	// indirect lighting
+	glm::fvec3 reflected = glm::reflect(-outcoming, normal);
+	float specular_probability = fresnel_ior(outcoming, reflected, ior);
+	specular_probability = glm::max(specular_probability, metallic);
+	bool specular_sample = rand_float(ray.rng) < specular_probability;
+	glm::fvec3 indirect_incoming = specular_sample ? 
+		importance_specular(ray.rng, normal, outcoming, roughness) : 
+		importance_diffuse(ray.rng, normal, outcoming);
+	
+	if (glm::dot(normal, indirect_incoming) <= 0.0f) {
+		ray.active = false;
+		accumulate_pixel(ray, scn, out_buf, sample_idx, transparent_bg);
+		return;
+	}
+	
+	glm::fvec3 brdf = eval_brdf(normal, outcoming, indirect_incoming, albedo, metallic, roughness);
+	
+	float diffuse_pdf = pdf_diffuse(normal, indirect_incoming);
+	float specular_pdf = pdf_specular(normal, outcoming, indirect_incoming, roughness);
+	float pdf = glm::mix(diffuse_pdf, specular_pdf, specular_probability);
+	
+	glm::fvec3 weight = brdf / glm::max(pdf, 0.0001f);
+	weight = glm::clamp(weight, glm::fvec3(0.0f), glm::fvec3(1.0f));
+	ray.throughput *= weight;
+	
+	// setup next iteration
+	ray.pos = hit.position + indirect_incoming * 0.001f;
+	ray.dir = indirect_incoming;
+	ray.camera_ray = false;
+	
+	// russian roulette early termination
+	if (bounce_idx > 3) {
+		float continue_prob = glm::min(glm::max(ray.throughput.x, glm::max(ray.throughput.y, ray.throughput.z)), 0.95f);
+		if (rand_float(ray.rng) > continue_prob) {
+			ray.active = false;
+			accumulate_pixel(ray, scn, out_buf, sample_idx, transparent_bg);
+			return;
+		}
+		// compensate - increase throughput for the non-terminated rays
+		ray.throughput /= continue_prob;
+	}
+
+	// // write to next buffer for compacting
+	// uint32_t next_idx = atomicAdd(num_out_rays, 1);
+	// next_rays[next_idx] = ray;
+
+	bool survived = ray.active;
+
+	// warp aggregation logic
+	uint32_t mask = __ballot_sync(0xFFFFFFFF, survived);
+	uint32_t warp_res;
+	
+	if (survived) {
+		// calculate local index within the warp survivors
+		uint32_t lane_id = threadIdx.x % 32;
+		uint32_t local_idx = __popc(mask & ((1u << lane_id) - 1));
+		
+		// head of warp gets the global base offset for the whole warp
+		if (local_idx == 0) {
+			warp_res = atomicAdd(num_out_rays, __popc(mask));
+		}
+		
+		// broadcast the base offset to all surviving threads in warp
+		uint32_t base_offset = __shfl_sync(mask, warp_res, __ffs(mask) - 1);
+		next_rays[base_offset + local_idx] = ray;
+	}
+}
+
+__global__ void accumulate_kernel(ray_state *rays, uint32_t num_rays, const scene_data scn, glm::fvec4 *out_buf, uint32_t sample_idx, bool transparent_bg) {
+	uint32_t ray_idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (ray_idx >= num_rays) {
+		return;
+	}
+
+	ray_state ray = rays[ray_idx];
+
+	glm::fvec3 new_color = ray.accumulated_light;
+	glm::fvec4 old_sample = out_buf[ray.pixel_idx];
+	glm::fvec3 old_color = glm::fvec3(old_sample);
+	float old_alpha = old_sample.w;
+	
+	float sample_idx_f = sample_idx;
+	if (!ray.camera_ray_hit_bg) {
+		old_color = (old_color * sample_idx_f + new_color) / (sample_idx_f + 1.0f);
+	}
+	float new_alpha = ray.camera_ray_hit_bg ? 0.0f : 1.0f;
+	old_alpha = (old_alpha * sample_idx_f + new_alpha) / (sample_idx_f + 1.0f);
+
+	// overlay on environment
+	if (!transparent_bg) {
+		glm::fvec3 env_color = sample_environment(scn, ray.og_dir);
+		old_color = glm::mix(env_color, old_color, old_alpha);
+		old_alpha = 1.0;
+	}
+
+	out_buf[ray.pixel_idx] = glm::fvec4(old_color, old_alpha);
+}
+
+struct cache_data {
+	ray_state *rays_a, *rays_b;
+	size_t partition_temp_storage_bytes; // for cub::DevicePartition::If
+	void *partition_temp_storage; // for cub::DevicePartition::If
+	uint32_t *partition_dummy_numel; // dummy output for cub::DevicePartition::If; we don't actually need the number of elements in the true/false partitions since we will just launch the next kernel with the full ray count and let it check the active flag, but cub requires a valid pointer for this output
+	uint32_t *num_out_rays; // for compacting in bounce kernel
+	int init_width, init_height;
+};
+
+void render_sample_cuda_impl(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg, cache_data *cache) {
+	ray_state *curr_rays = cache->rays_a;
+	ray_state *next_rays = cache->rays_b;
+
+	uint32_t num_total_rays = width * height;
+	uint32_t num_active_rays = num_total_rays;
+
+	dim3 block_size(16, 16);
+	dim3 grid_size((width + block_size.x - 1) / block_size.x, (height + block_size.y - 1) / block_size.y);
+	generate_primary_rays_kernel<<<grid_size, block_size>>>(scn, curr_rays, width, height, sample_idx);
+	CUDA_CHECK_LAST_KERNEL_LAUNCH();
+	// CUDA_CHECK(cudaDeviceSynchronize());
+	
+	for (uint32_t bounce_idx = 0; bounce_idx < 4 && num_active_rays > 0; bounce_idx++) {
+		process_bounce_kernel<<<(num_active_rays + 255) / 256, 256>>>(scn, curr_rays, num_active_rays, bounce_idx);
+		CUDA_CHECK_LAST_KERNEL_LAUNCH();
+		// CUDA_CHECK(cudaDeviceSynchronize());
+
+		// // partition returns an iterator to the first element that does not satisfy the predicate
+		// thrust::device_ptr<ray_state> rays_ptr(curr_rays);
+		// auto end_active_ptr = thrust::partition(thrust::device, rays_ptr, rays_ptr + num_active_rays, is_active());
+		// num_active_rays = end_active_ptr - rays_ptr;
+		// // ^ this is even slower than no compaction due to host sync overhead!
+
+		// // instead use cub::DevicePartition::If which can do partitioning without host sync, but requires preallocated temp storage and separate output buffers for true/false partitions
+		// cub::DevicePartition::If(
+		// 	cache->partition_temp_storage, cache->partition_temp_storage_bytes,
+		// 	curr_rays, next_rays,
+		// 	cache->partition_dummy_numel,
+		// 	num_active_rays,
+		// 	is_active()
+		// );
+		// std::swap(curr_rays, next_rays);
+		// // num_active_rays stays the same =total_rays :shrug:
+		// // ^ this is the same speed as no compaction. likely the overhead of partitioning is too big
+		// // note: running every "if (bounce_idx % 2 == 1) { // i=1, i=3" similarly gives no performance gains
+
+		// // last try - compact directly in the bounce kernel by writing active rays to the next buffer using atomicAdd to get the next write index. perform just one atomicAdd per warp through coop
+		// CUDA_CHECK(cudaMemsetAsync(cache->num_out_rays, 0, sizeof(uint32_t), 0));
+		// process_bounce_kernel_compact<<<(num_active_rays + 255) / 256, 256>>>(scn, curr_rays, next_rays, num_active_rays, cache->num_out_rays, bounce_idx, out_buf, sample_idx, transparent_bg);
+		// CUDA_CHECK_LAST_KERNEL_LAUNCH();
+		// std::swap(curr_rays, next_rays);
+		// ^ same performance as no compaction (also didnt finish the impl properly, so accum is a bit glitchy)
+
+		// conclusion: branch divergence is not the bottleneck
+	}
+
+	// pass total_rays so the kernel can map rays back to their original pixel locations if needed
+	accumulate_kernel<<<(num_total_rays + 255) / 256, 256>>>(curr_rays, num_total_rays, scn, out_buf, sample_idx, transparent_bg);
+	// ^ in case we use process_bounce_kernel_compact, this launch accumulates the remaining active rays
+	CUDA_CHECK_LAST_KERNEL_LAUNCH();
+	// CUDA_CHECK(cudaDeviceSynchronize());
+}
+
+void render_sample_cuda_free_cache(void **cache_vptr);
+void render_sample_cuda(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg, void **cache_vptr) {
+	// remove old cache if size doesn't match
+	if (cache_vptr != nullptr && *cache_vptr != nullptr) {
+		cache_data *cache = reinterpret_cast<cache_data *>(*cache_vptr);
+		if (cache->init_width != width || cache->init_height != height) {
+			std::cout << "Freeing old cache due to size mismatch (old: " << cache->init_width << "x" << cache->init_height << ", new: " << width << "x" << height << ")\n";
+			render_sample_cuda_free_cache(cache_vptr);
+		}
+	}
+	
+	// get or init cache
+	cache_data *cache = nullptr;
+	if (cache_vptr == nullptr || *cache_vptr == nullptr) {
+		std::cout << "Initializing new cache for size " << width << "x" << height << "\n";
+		cache_data *new_cache = reinterpret_cast<cache_data *>(malloc(sizeof(cache_data)));
+		
+		new_cache->rays_a = nullptr;
+		new_cache->rays_b = nullptr;
+		CUDA_CHECK(cudaMalloc(&new_cache->rays_a, width * height * sizeof(ray_state)));
+		CUDA_CHECK(cudaMalloc(&new_cache->rays_b, width * height * sizeof(ray_state)));
+
+		CUDA_CHECK(cudaMalloc(&new_cache->partition_dummy_numel, sizeof(uint32_t)));
+
+		CUDA_CHECK(cub::DevicePartition::If(
+			nullptr, new_cache->partition_temp_storage_bytes,
+			new_cache->rays_a, new_cache->rays_b,
+			new_cache->partition_dummy_numel,
+			width * height,
+			is_active()
+		));
+		CUDA_CHECK(cudaMalloc(&new_cache->partition_temp_storage, new_cache->partition_temp_storage_bytes));
+
+		CUDA_CHECK(cudaMalloc(&new_cache->num_out_rays, sizeof(uint32_t)));
+
+		new_cache->init_width = width;
+		new_cache->init_height = height;
+
+		if (cache_vptr != nullptr) {
+			// in case cache_vptr is null, we will free a temporary cache at the end of this function, so no need to store the pointer
+			*cache_vptr = new_cache;
+		}
+		cache = new_cache;
+	} else {
+		cache = reinterpret_cast<cache_data *>(*cache_vptr);
+	}
+
+	render_sample_cuda_impl(scn, out_buf, width, height, sample_idx, transparent_bg, cache);
+
+	// free temporary cache
+	if (cache_vptr == nullptr) {
+		render_sample_cuda_free_cache(reinterpret_cast<void **>(&cache));
+	}
+}
+
+void render_sample_cuda_free_cache(void **cache_vptr) {
+	std::cout << "Freeing cache\n";
+	if (cache_vptr == nullptr || *cache_vptr == nullptr) return;
+	cache_data *cache = reinterpret_cast<cache_data *>(*cache_vptr);
+	
+	if (cache->rays_a != nullptr) {
+		CUDA_CHECK(cudaFree(cache->rays_a));
+		cache->rays_a = nullptr;
+	}
+	if (cache->rays_b != nullptr) {
+		CUDA_CHECK(cudaFree(cache->rays_b));
+		cache->rays_b = nullptr;
+	}
+	if (cache->partition_dummy_numel != nullptr) {
+		CUDA_CHECK(cudaFree(cache->partition_dummy_numel));
+		cache->partition_dummy_numel = nullptr;
+	}
+	if (cache->partition_temp_storage != nullptr) {
+		CUDA_CHECK(cudaFree(cache->partition_temp_storage));
+		cache->partition_temp_storage = nullptr;
+	}
+	if (cache->num_out_rays != nullptr) {
+		CUDA_CHECK(cudaFree(cache->num_out_rays));
+		cache->num_out_rays = nullptr;
+	}
+
+	free(cache);
+	*cache_vptr = nullptr;
+}

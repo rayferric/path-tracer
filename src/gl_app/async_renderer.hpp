@@ -24,6 +24,7 @@ public:
 		if (hdr_buf_cuda) {
 			cuda_free(hdr_buf_cuda);
 		}
+		render_sample_cuda_free_cache(&cuda_cache);
 #endif
 	}
 
@@ -169,7 +170,7 @@ private:
 							hdr_buf_cuda = static_cast<glm::fvec4 *>(cuda_malloc(width * height * sizeof(glm::fvec4)));
 						}
 						cuda_memcpy(hdr_buf_cuda, hdr_buf.data(), width * height * sizeof(glm::fvec4), cuda_memcpy_kind::host_to_device);
-						render_sample_cuda(*reinterpret_cast<scene_data *>(cuda_scn.get()), hdr_buf_cuda, width, height, current_sample_idx, transparent_background);
+						render_sample_cuda(*reinterpret_cast<scene_data *>(cuda_scn.get()), hdr_buf_cuda, width, height, current_sample_idx, transparent_background, &cuda_cache);
 						cuda_memcpy(hdr_buf.data(), hdr_buf_cuda, width * height * sizeof(glm::fvec4), cuda_memcpy_kind::device_to_host);
 					}
 #else
@@ -223,5 +224,6 @@ private:
 #ifdef ENABLE_CUDA
 	std::unique_ptr<cuda_scene> cuda_scn;
 	glm::fvec4 *hdr_buf_cuda = nullptr;
+	void *cuda_cache = nullptr;
 #endif
 };

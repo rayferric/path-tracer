@@ -11,6 +11,10 @@ if(ENABLE_CUDA)
     enable_language(CUDA)
     # suppress NVCC warnings caused by GLM
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --diag-suppress 20012,20094 --expt-relaxed-constexpr")
+    # enable standard conforming preprocessor for CUDA thrust
+    if(MSVC)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/Zc:preprocessor")
+    endif()
 endif()
 
 add_subdirectory("vendor/glad")

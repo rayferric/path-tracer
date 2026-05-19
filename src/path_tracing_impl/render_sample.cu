@@ -11,11 +11,13 @@ __global__ void render_sample_kernel(const scene_data scn, glm::fvec4 *out_buf, 
 	}
 }
 
-void render_sample_cuda(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg) {
+void render_sample_cuda(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg, void **cache) {
 	dim3 block(16, 16); // 256 threads per block, good occupancy
 	dim3 grid((width + 15) / 16, (height + 15) / 16);
 
 	render_sample_kernel<<<grid, block>>>(scn, out_buf, width, height, sample_idx, transparent_bg);
 	CUDA_CHECK_LAST_KERNEL_LAUNCH();
-	CUDA_CHECK(cudaDeviceSynchronize());
+	// CUDA_CHECK(cudaDeviceSynchronize());
 }
+
+void render_sample_cuda_free_cache(void **cache) {}

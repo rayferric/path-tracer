@@ -78,9 +78,11 @@ static void multithread_image_ops(uint32_t width, uint32_t height, const std::fu
 	}
 }
 
-void render_sample(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg) {
+void render_sample(const scene_data &scn, glm::fvec4 *out_buf, uint32_t width, uint32_t height, uint32_t sample_idx, bool transparent_bg, void **cache) {
 	auto per_pixel_job = [&](uint32_t x, uint32_t y) {
 		render_sample_one_pixel(scn, out_buf, width, height, x, y, sample_idx, transparent_bg);
 	};
 	multithread_image_ops(width, height, per_pixel_job);
 }
+
+void render_sample_free_cache(void **cache) {}
