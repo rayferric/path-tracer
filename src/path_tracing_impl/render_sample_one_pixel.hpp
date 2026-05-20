@@ -42,6 +42,11 @@ CUDA_CALLABLE inline void render_sample_one_pixel(const scene_data &scn, glm::fv
 	bool hit_bg;
 	glm::fvec3 new_color = path_trace(scn, pos, dir, rng, 4, hit_bg); // max_bounces=4
 
+	// do not accumulate this sample if it produced nans
+	if (glm::any(glm::isnan(new_color))) {
+		return;
+	}
+
 	glm::fvec4 old_sample = out_buf[y * width + x];
 	glm::fvec3 old_color = glm::fvec3(old_sample);
 	float old_alpha = old_sample.w;
