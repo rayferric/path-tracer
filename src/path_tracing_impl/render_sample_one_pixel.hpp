@@ -43,7 +43,7 @@ CUDA_CALLABLE inline void render_sample_one_pixel(const scene_data &scn, glm::fv
 	glm::fvec3 new_color = path_trace(scn, pos, dir, rng, 4, hit_bg); // max_bounces=4
 
 	// do not accumulate this sample if it produced nans
-	if (glm::any(glm::isnan(new_color))) {
+	if (new_color.x != new_color.x || new_color.y != new_color.y || new_color.z != new_color.z) {
 		return;
 	}
 
