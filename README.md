@@ -1,17 +1,3 @@
-# Path Tracer
-
-Interactive CUDA path tracer with PBR quality
-
-## Features
-
-- Realistic path tracing with PBR metallic-roughness materials
-- CUDA GPU-accelerated backend
-- Alternative CPU backend with tiling scheduler
-- Interactive GUI render editor
-- GLTF scene import with emissive objects, sunlight and cameras
-- HDRI environment maps
-- Transparent rendering for compositing
-
 ## Demo
 
 ![](./demo.gif)
@@ -32,6 +18,16 @@ Interactive CUDA path tracer with PBR quality
 		<img style="width: 400px; margin: 20px;" src="./renders/cerberus.preview.png" />
 	</div>
 </div>
+
+## Features
+
+- Realistic path tracing with PBR metallic-roughness materials
+- CUDA GPU-accelerated backend
+- Alternative CPU backend with tiling scheduler
+- Interactive GUI render editor
+- GLTF scene import with emissive objects, sunlight and cameras
+- HDRI environment maps
+- Transparent rendering for compositing
 
 ## Building
 
